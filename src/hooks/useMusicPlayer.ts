@@ -1,0 +1,237 @@
+import { useState, useRef, useEffect, useCallback } from 'react';
+
+interface Song {
+  song_id: string;
+  track_name: string;
+  artists_string: string;
+  album_name?: string;
+  cover_art_url?: string;
+  github_url: string;
+  duration_formatted?: string;
+}
+
+interface UseMusicPlayerReturn {
+  currentSong: Song | null;
+  isPlaying: boolean;
+  currentTime: number;
+  duration: number;
+  volume: number;
+  queue: Song[];
+  currentIndex: number;
+  
+  // Actions
+  playSong: (song: Song) => void;
+  play: () => void;
+  pause: () => void;
+  next: () => void;
+  previous: () => void;
+  seek: (time: number) => void;
+  setVolume: (volume: number) => void;
+  addToQueue: (songs: Song[]) => void;
+  clearQueue: () => void;
+  shuffleQueue: () => void;
+}
+
+export const useMusicPlayer = (): UseMusicPlayerReturn => {
+  const [currentSong, setCurrentSong] = useState<Song | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [volume, setVolumeState] = useState(0.7);
+  const [queue, setQueue] = useState<Song[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const progressInterval = useRef<NodeJS.Timeout | null>(null);
+
+  // Initialize audio element
+  useEffect(() => {
+    audioRef.current = new Audio();
+    audioRef.current.volume = volume;
+    
+    const audio = audioRef.current;
+    
+    const handleLoadedMetadata = () => {
+      setDuration(audio.duration);
+    };
+    
+    const handleEnded = () => {
+      next();
+    };
+    
+    const handleError = (e: Event) => {
+      console.error('Audio error:', e);
+      // Try next song on error
+      next();
+    };
+
+    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+    audio.addEventListener('ended', handleEnded);
+    audio.addEventListener('error', handleError);
+    
+    return () => {
+      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      audio.removeEventListener('ended', handleEnded);
+      audio.removeEventListener('error', handleError);
+      audio.pause();
+    };
+  }, []);
+
+  // Update progress
+  useEffect(() => {
+    if (isPlaying && audioRef.current) {
+      progressInterval.current = setInterval(() => {
+        setCurrentTime(audioRef.current?.currentTime || 0);
+      }, 1000);
+    } else {
+      if (progressInterval.current) {
+        clearInterval(progressInterval.current);
+        progressInterval.current = null;
+      }
+    }
+
+    return () => {
+      if (progressInterval.current) {
+        clearInterval(progressInterval.current);
+      }
+    };
+  }, [isPlaying]);
+
+  const playSong = useCallback((song: Song) => {
+    if (!audioRef.current) return;
+    
+    // If it's a different song, update current song and load it
+    if (currentSong?.song_id !== song.song_id) {
+      setCurrentSong(song);
+      audioRef.current.src = song.github_url;
+      setCurrentTime(0);
+      
+      // Add to queue if not already there
+      if (!queue.find(s => s.song_id === song.song_id)) {
+        const newQueue = [song, ...queue];
+        setQueue(newQueue);
+        setCurrentIndex(0);
+      } else {
+        const index = queue.findIndex(s => s.song_id === song.song_id);
+        setCurrentIndex(index);
+      }
+    }
+    
+    audioRef.current.play()
+      .then(() => setIsPlaying(true))
+      .catch(error => console.error('Error playing audio:', error));
+  }, [currentSong, queue]);
+
+  const play = useCallback(() => {
+    if (audioRef.current && currentSong) {
+      audioRef.current.play()
+        .then(() => setIsPlaying(true))
+        .catch(error => console.error('Error playing audio:', error));
+    }
+  }, [currentSong]);
+
+  const pause = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    }
+  }, []);
+
+  const next = useCallback(() => {
+    if (queue.length === 0) return;
+    
+    const nextIndex = (currentIndex + 1) % queue.length;
+    const nextSong = queue[nextIndex];
+    
+    setCurrentIndex(nextIndex);
+    playSong(nextSong);
+  }, [queue, currentIndex, playSong]);
+
+  const previous = useCallback(() => {
+    if (queue.length === 0) return;
+    
+    // If we're more than 3 seconds into the song, restart it
+    if (currentTime > 3) {
+      seek(0);
+      return;
+    }
+    
+    const prevIndex = currentIndex === 0 ? queue.length - 1 : currentIndex - 1;
+    const prevSong = queue[prevIndex];
+    
+    setCurrentIndex(prevIndex);
+    playSong(prevSong);
+  }, [queue, currentIndex, currentTime, playSong]);
+
+  const seek = useCallback((time: number) => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = time;
+      setCurrentTime(time);
+    }
+  }, []);
+
+  const setVolume = useCallback((newVolume: number) => {
+    setVolumeState(newVolume);
+    if (audioRef.current) {
+      audioRef.current.volume = newVolume;
+    }
+    localStorage.setItem('songify-volume', newVolume.toString());
+  }, []);
+
+  const addToQueue = useCallback((songs: Song[]) => {
+    setQueue(prevQueue => [...prevQueue, ...songs]);
+  }, []);
+
+  const clearQueue = useCallback(() => {
+    setQueue([]);
+    setCurrentIndex(0);
+  }, []);
+
+  const shuffleQueue = useCallback(() => {
+    const shuffled = [...queue];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    setQueue(shuffled);
+    
+    // Update current index to match current song
+    if (currentSong) {
+      const newIndex = shuffled.findIndex(s => s.song_id === currentSong.song_id);
+      setCurrentIndex(newIndex !== -1 ? newIndex : 0);
+    }
+  }, [queue, currentSong]);
+
+  // Load volume from localStorage on mount
+  useEffect(() => {
+    const savedVolume = localStorage.getItem('songify-volume');
+    if (savedVolume) {
+      const vol = parseFloat(savedVolume);
+      setVolumeState(vol);
+      if (audioRef.current) {
+        audioRef.current.volume = vol;
+      }
+    }
+  }, []);
+
+  return {
+    currentSong,
+    isPlaying,
+    currentTime,
+    duration,
+    volume,
+    queue,
+    currentIndex,
+    
+    playSong,
+    play,
+    pause,
+    next,
+    previous,
+    seek,
+    setVolume,
+    addToQueue,
+    clearQueue,
+    shuffleQueue,
+  };
+};

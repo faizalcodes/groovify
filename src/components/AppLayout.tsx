@@ -1,0 +1,270 @@
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { SearchBar } from '@/components/SearchBar';
+import { MusicPlayer } from '@/components/MusicPlayer';
+import { useMusicPlayer } from '@/hooks/useMusicPlayer';
+import { 
+  Home, 
+  Search, 
+  Library, 
+  Menu,
+  X,
+  Music,
+  Disc3,
+  Heart,
+  Clock,
+  TrendingUp
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+interface AppLayoutProps {
+  children: React.ReactNode;
+  currentView: 'home' | 'search' | 'library' | 'playlist';
+  onNavigate: (view: 'home' | 'search' | 'library' | 'playlist') => void;
+  onSearch: (query: string) => void;
+}
+
+export const AppLayout: React.FC<AppLayoutProps> = ({
+  children,
+  currentView,
+  onNavigate,
+  onSearch
+}) => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const musicPlayer = useMusicPlayer();
+
+  const navItems = [
+    { id: 'home', label: 'Home', icon: Home },
+    { id: 'search', label: 'Search', icon: Search },
+    { id: 'library', label: 'Your Library', icon: Library },
+  ];
+
+  const libraryItems = [
+    { id: 'liked', label: 'Liked Songs', icon: Heart, count: 0 },
+    { id: 'recent', label: 'Recently Played', icon: Clock, count: 0 },
+    { id: 'trending', label: 'Trending', icon: TrendingUp, count: 0 },
+  ];
+
+  return (
+    <div className="min-h-screen bg-gradient-background">
+      {/* Mobile Header */}
+      <header className="md:hidden bg-background-secondary/95 backdrop-blur-lg border-b border-border/50 p-4 sticky top-0 z-40">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsSidebarOpen(true)}
+              className="text-foreground"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
+                <Music className="h-4 w-4 text-white" />
+              </div>
+              <h1 className="font-bold text-xl bg-gradient-primary bg-clip-text text-transparent">
+                Songify
+              </h1>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div className="flex">
+        {/* Desktop Sidebar */}
+        <aside className={cn(
+          "hidden md:flex flex-col w-80 bg-background-secondary border-r border-border/50 min-h-screen"
+        )}>
+          <div className="p-6">
+            {/* Logo */}
+            <div className="flex items-center space-x-3 mb-8">
+              <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center shadow-glow-primary">
+                <Music className="h-5 w-5 text-white" />
+              </div>
+              <h1 className="font-bold text-2xl bg-gradient-primary bg-clip-text text-transparent">
+                Songify
+              </h1>
+            </div>
+
+            {/* Search Bar */}
+            <div className="mb-8">
+              <SearchBar
+                onSearch={onSearch}
+                placeholder="Search music..."
+                className="w-full"
+              />
+            </div>
+
+            {/* Navigation */}
+            <nav className="space-y-2 mb-8">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Button
+                    key={item.id}
+                    variant="ghost"
+                    onClick={() => onNavigate(item.id as any)}
+                    className={cn(
+                      "w-full justify-start text-left font-medium transition-all duration-200",
+                      currentView === item.id
+                        ? "bg-accent text-primary shadow-primary/20"
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                    )}
+                  >
+                    <Icon className="mr-3 h-5 w-5" />
+                    {item.label}
+                  </Button>
+                );
+              })}
+            </nav>
+
+            {/* Library Section */}
+            <div className="border-t border-border/30 pt-6">
+              <h3 className="font-semibold text-foreground mb-4 px-3">Your Library</h3>
+              <div className="space-y-2">
+                {libraryItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Button
+                      key={item.id}
+                      variant="ghost"
+                      className="w-full justify-between text-left font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all duration-200"
+                    >
+                      <div className="flex items-center">
+                        <Icon className="mr-3 h-4 w-4" />
+                        {item.label}
+                      </div>
+                      {item.count > 0 && (
+                        <span className="text-xs bg-muted px-2 py-1 rounded-full">
+                          {item.count}
+                        </span>
+                      )}
+                    </Button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        {/* Mobile Sidebar Overlay */}
+        {isSidebarOpen && (
+          <div className="md:hidden fixed inset-0 z-50 flex">
+            <div 
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              onClick={() => setIsSidebarOpen(false)}
+            />
+            <Card className="relative w-80 h-full bg-background-secondary border-r border-border/50 overflow-y-auto">
+              <div className="p-6">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
+                      <Music className="h-4 w-4 text-white" />
+                    </div>
+                    <h1 className="font-bold text-xl bg-gradient-primary bg-clip-text text-transparent">
+                      Songify
+                    </h1>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsSidebarOpen(false)}
+                    className="text-muted-foreground"
+                  >
+                    <X className="h-5 w-5" />
+                  </Button>
+                </div>
+
+                {/* Navigation */}
+                <nav className="space-y-2 mb-8">
+                  {navItems.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <Button
+                        key={item.id}
+                        variant="ghost"
+                        onClick={() => {
+                          onNavigate(item.id as any);
+                          setIsSidebarOpen(false);
+                        }}
+                        className={cn(
+                          "w-full justify-start text-left font-medium transition-all duration-200",
+                          currentView === item.id
+                            ? "bg-accent text-primary"
+                            : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                        )}
+                      >
+                        <Icon className="mr-3 h-5 w-5" />
+                        {item.label}
+                      </Button>
+                    );
+                  })}
+                </nav>
+
+                {/* Library Section */}
+                <div className="border-t border-border/30 pt-6">
+                  <h3 className="font-semibold text-foreground mb-4 px-3">Your Library</h3>
+                  <div className="space-y-2">
+                    {libraryItems.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <Button
+                          key={item.id}
+                          variant="ghost"
+                          className="w-full justify-between text-left font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all duration-200"
+                        >
+                          <div className="flex items-center">
+                            <Icon className="mr-3 h-4 w-4" />
+                            {item.label}
+                          </div>
+                          {item.count > 0 && (
+                            <span className="text-xs bg-muted px-2 py-1 rounded-full">
+                              {item.count}
+                            </span>
+                          )}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
+        )}
+
+        {/* Main Content */}
+        <main className="flex-1 min-h-screen pb-32 md:pb-24">
+          {/* Search Bar for Mobile */}
+          <div className="md:hidden p-4 border-b border-border/30">
+            <SearchBar
+              onSearch={onSearch}
+              placeholder="Search music..."
+              className="w-full"
+            />
+          </div>
+
+          {children}
+        </main>
+      </div>
+
+      {/* Music Player */}
+      <MusicPlayer
+        currentSong={musicPlayer.currentSong}
+        isPlaying={musicPlayer.isPlaying}
+        onPlay={musicPlayer.play}
+        onPause={musicPlayer.pause}
+        onNext={musicPlayer.next}
+        onPrevious={musicPlayer.previous}
+        onSeek={musicPlayer.seek}
+        currentTime={musicPlayer.currentTime}
+        duration={musicPlayer.duration}
+        volume={musicPlayer.volume}
+        onVolumeChange={musicPlayer.setVolume}
+        queue={musicPlayer.queue}
+      />
+    </div>
+  );
+};
