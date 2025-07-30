@@ -4,6 +4,7 @@ import { SongCard } from '@/components/SongCard';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useMusicPlayer } from '@/hooks/useMusicPlayer';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { songifyApi, Song, Playlist } from '@/services/songifyApi';
 import { 
   Music, 
@@ -13,7 +14,8 @@ import {
   Loader2,
   RefreshCw,
   Shuffle,
-  Clock
+  Clock,
+  ArrowLeft
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -23,11 +25,17 @@ const Index = () => {
   const [songs, setSongs] = useState<Song[]>([]);
   const [playlists, setPlaylists] = useState<Record<string, Playlist>>({});
   const [searchResults, setSearchResults] = useState<Song[]>([]);
+  const [selectedPlaylist, setSelectedPlaylist] = useState<string | null>(null);
+  const [playlistSongs, setPlaylistSongs] = useState<Song[]>([]);
+  const [totalSongs, setTotalSongs] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isSearching, setIsSearching] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [playlistPage, setPlaylistPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [playlistHasMore, setPlaylistHasMore] = useState(true);
   
   const musicPlayer = useMusicPlayer();
 
@@ -40,13 +48,15 @@ const Index = () => {
     try {
       setIsLoading(true);
       const [songsData, playlistsData] = await Promise.all([
-        songifyApi.getAllSongs(1, 20),
+        songifyApi.getAllSongs(1, 30),
         songifyApi.getPlaylists()
       ]);
       
       setSongs(songsData.songs);
+      setTotalSongs(songsData.total_songs);
       setPlaylists(playlistsData);
       setHasMore(songsData.pagination.has_next);
+      setCurrentPage(1);
     } catch (error) {
       console.error('Failed to load initial data:', error);
       toast.error('Failed to load music library');
@@ -56,11 +66,12 @@ const Index = () => {
   };
 
   const loadMoreSongs = async () => {
-    if (!hasMore || isLoading) return;
+    if (!hasMore || isLoadingMore) return;
     
     try {
+      setIsLoadingMore(true);
       const nextPage = currentPage + 1;
-      const songsData = await songifyApi.getAllSongs(nextPage, 20);
+      const songsData = await songifyApi.getAllSongs(nextPage, 30);
       
       setSongs(prev => [...prev, ...songsData.songs]);
       setCurrentPage(nextPage);
@@ -68,7 +79,44 @@ const Index = () => {
     } catch (error) {
       console.error('Failed to load more songs:', error);
       toast.error('Failed to load more songs');
+    } finally {
+      setIsLoadingMore(false);
     }
+  };
+
+  const loadPlaylistSongs = async (playlistName: string, page: number = 1) => {
+    try {
+      const isFirstLoad = page === 1;
+      if (isFirstLoad) {
+        setIsLoading(true);
+        setPlaylistSongs([]);
+      } else {
+        setIsLoadingMore(true);
+      }
+      
+      const playlistData = await songifyApi.getPlaylistSongs(playlistName, page, 30);
+      
+      if (isFirstLoad) {
+        setPlaylistSongs(playlistData.songs);
+        setPlaylistPage(1);
+      } else {
+        setPlaylistSongs(prev => [...prev, ...playlistData.songs]);
+        setPlaylistPage(page);
+      }
+      
+      setPlaylistHasMore(playlistData.pagination.has_next);
+    } catch (error) {
+      console.error('Failed to load playlist songs:', error);
+      toast.error('Failed to load playlist songs');
+    } finally {
+      setIsLoading(false);
+      setIsLoadingMore(false);
+    }
+  };
+
+  const loadMorePlaylistSongs = async () => {
+    if (!playlistHasMore || isLoadingMore || !selectedPlaylist) return;
+    await loadPlaylistSongs(selectedPlaylist, playlistPage + 1);
   };
 
   const handleSearch = async (query: string) => {
@@ -114,7 +162,10 @@ const Index = () => {
   };
 
   const handleShufflePlay = () => {
-    const currentSongs = currentView === 'search' ? searchResults : songs;
+    let currentSongs = songs;
+    if (currentView === 'search') currentSongs = searchResults;
+    else if (currentView === 'playlist') currentSongs = playlistSongs;
+    
     if (currentSongs.length === 0) return;
     
     const shuffled = [...currentSongs].sort(() => Math.random() - 0.5);
@@ -123,6 +174,158 @@ const Index = () => {
     musicPlayer.playSong(shuffled[0]);
     
     toast.success('Shuffle mode activated');
+  };
+
+  const handlePlaylistSelect = (playlistName: string) => {
+    setSelectedPlaylist(playlistName);
+    setCurrentView('playlist');
+    loadPlaylistSongs(playlistName);
+  };
+
+  const { sentinelRef: homeSentinelRef } = useInfiniteScroll({
+    onLoadMore: loadMoreSongs,
+    hasMore,
+    threshold: 5,
+    isLoading: isLoadingMore
+  });
+
+  const { sentinelRef: playlistSentinelRef } = useInfiniteScroll({
+    onLoadMore: loadMorePlaylistSongs,
+    hasMore: playlistHasMore,
+    threshold: 5,
+    isLoading: isLoadingMore
+  });
+
+  const renderLibraryView = () => (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold text-foreground">Your Playlists</h2>
+      
+      {Object.keys(playlists).length === 0 ? (
+        <div className="text-center py-12">
+          <Disc3 className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+          <h3 className="text-lg font-semibold text-foreground mb-2">No playlists found</h3>
+          <p className="text-muted-foreground">Playlists will appear here when available</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Object.entries(playlists).map(([name, playlist]) => (
+            <Card 
+              key={name} 
+              className="p-6 bg-card/50 border-border/50 hover:shadow-card transition-all duration-300 cursor-pointer group"
+              onClick={() => handlePlaylistSelect(name)}
+            >
+              <div className="flex items-start space-x-4">
+                <div className="w-16 h-16 bg-gradient-primary rounded-lg flex items-center justify-center">
+                  <Disc3 className="h-8 w-8 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+                    {playlist.name}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {playlist.unique_song_count} songs
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {playlist.successful_downloads} downloads
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4 flex items-center text-sm text-muted-foreground">
+                <Play className="h-4 w-4 mr-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <span className="group-hover:text-primary transition-colors">Play playlist</span>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  const renderPlaylistView = () => {
+    if (!selectedPlaylist) return renderLibraryView();
+    
+    const playlist = playlists[selectedPlaylist];
+    
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setCurrentView('library')}
+            className="text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Playlists
+          </Button>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">{selectedPlaylist}</h2>
+            <p className="text-muted-foreground mt-1">
+              {playlist?.unique_song_count || 0} songs
+            </p>
+          </div>
+          {playlistSongs.length > 0 && (
+            <Button
+              onClick={handleShufflePlay}
+              className="bg-gradient-primary text-primary-foreground hover:shadow-glow-primary"
+            >
+              <Shuffle className="mr-2 h-4 w-4" />
+              Shuffle All
+            </Button>
+          )}
+        </div>
+
+        {isLoading ? (
+          <div className="space-y-4">
+            {[...Array(5)].map((_, i) => (
+              <Card key={i} className="p-4 bg-card/50 border-border/50">
+                <div className="flex items-center space-x-4">
+                  <div className="w-16 h-16 bg-muted rounded-lg animate-pulse" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-muted rounded animate-pulse" />
+                    <div className="h-3 bg-muted/60 rounded w-3/4 animate-pulse" />
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        ) : playlistSongs.length > 0 ? (
+          <div className="space-y-4">
+            {playlistSongs.map((song) => (
+              <SongCard
+                key={song.song_id}
+                song={song}
+                isCurrentSong={musicPlayer.currentSong?.song_id === song.song_id}
+                isPlaying={musicPlayer.isPlaying && musicPlayer.currentSong?.song_id === song.song_id}
+                onPlay={handlePlaySong}
+                onPause={musicPlayer.pause}
+              />
+            ))}
+            
+            {/* Infinite scroll sentinel for playlist */}
+            {playlistHasMore && (
+              <div ref={playlistSentinelRef} className="flex justify-center py-8">
+                {isLoadingMore && (
+                  <div className="flex items-center text-muted-foreground">
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Loading more songs...
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <Music className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+            <h3 className="text-lg font-semibold text-foreground mb-2">No songs found</h3>
+            <p className="text-muted-foreground">This playlist appears to be empty</p>
+          </div>
+        )}
+      </div>
+    );
   };
 
   const renderHomeView = () => (
@@ -178,7 +381,7 @@ const Index = () => {
             </div>
             <div>
               <h3 className="font-semibold text-foreground">Total Songs</h3>
-              <p className="text-2xl font-bold text-primary">{songs.length}+</p>
+              <p className="text-2xl font-bold text-primary">{totalSongs.toLocaleString()}</p>
             </div>
           </div>
         </Card>
@@ -241,7 +444,7 @@ const Index = () => {
           </div>
         ) : (
           <div className="space-y-4">
-            {songs.slice(0, 10).map((song) => (
+            {songs.map((song, index) => (
               <SongCard
                 key={song.song_id}
                 song={song}
@@ -252,21 +455,15 @@ const Index = () => {
               />
             ))}
             
+            {/* Infinite scroll sentinel */}
             {hasMore && (
-              <div className="text-center pt-6">
-                <Button
-                  onClick={loadMoreSongs}
-                  variant="outline"
-                  disabled={isLoading}
-                  className="border-primary/30 text-primary hover:bg-primary/10"
-                >
-                  {isLoading ? (
+              <div ref={homeSentinelRef} className="flex justify-center py-8">
+                {isLoadingMore && (
+                  <div className="flex items-center text-muted-foreground">
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Music className="mr-2 h-4 w-4" />
-                  )}
-                  Load More Songs
-                </Button>
+                    Loading more songs...
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -337,13 +534,9 @@ const Index = () => {
       case 'search':
         return renderSearchView();
       case 'library':
-        return (
-          <div className="text-center py-12">
-            <Clock className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">Your Library</h3>
-            <p className="text-muted-foreground">Coming soon - manage your favorite songs and playlists</p>
-          </div>
-        );
+        return renderLibraryView();
+      case 'playlist':
+        return renderPlaylistView();
       default:
         return renderHomeView();
     }
