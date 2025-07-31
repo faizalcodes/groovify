@@ -236,7 +236,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
         )}
 
         {/* Main Content */}
-        <main className="flex-1 min-h-screen pb-32 md:pb-24">
+        <main className="flex-1 min-h-screen pb-28 md:pb-24">
           {/* Search Bar for Mobile */}
           <div className="md:hidden p-4 border-b border-border/30">
             <SearchBar

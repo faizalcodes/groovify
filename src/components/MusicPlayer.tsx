@@ -14,6 +14,7 @@ import {
   Heart
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useMediaSession } from '@/hooks/useMediaSession';
 
 interface Song {
   song_id: string;
@@ -61,6 +62,19 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({
   const [repeatMode, setRepeatMode] = useState<'off' | 'all' | 'one'>('off');
   const [isLiked, setIsLiked] = useState(false);
 
+  // Media Session API for lock screen controls
+  useMediaSession({
+    currentSong,
+    isPlaying,
+    onPlay,
+    onPause,
+    onNext,
+    onPrevious,
+    onSeek,
+    currentTime,
+    duration
+  });
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
@@ -83,104 +97,79 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({
 
   return (
     <Card className={cn(
-      "fixed bottom-0 left-0 right-0 z-50 bg-background-secondary/95 backdrop-blur-lg border-t border-border",
-      "shadow-card p-4 md:p-6",
+      "fixed bottom-0 left-0 right-0 z-50 bg-background-secondary/95 backdrop-blur-lg border-t border-border/50",
+      "shadow-glow-secondary p-3 md:p-6",
       className
     )}>
-      <div className="flex flex-col space-y-4">
-        {/* Mobile Layout - Stacked */}
+      <div className="flex flex-col space-y-3 md:space-y-4">
+        {/* Mobile Layout - Compact */}
         <div className="md:hidden">
-          {/* Song Info */}
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="relative">
+          {/* Main Player Row */}
+          <div className="flex items-center space-x-3">
+            {/* Thumbnail */}
+            <div className="relative flex-shrink-0">
               <img
                 src={currentSong.cover_art_url || '/placeholder.svg'}
                 alt={currentSong.track_name}
-                className="w-12 h-12 rounded-lg object-cover shadow-card"
+                className="w-14 h-14 rounded-lg object-cover shadow-card"
               />
               <div className="absolute inset-0 bg-gradient-primary opacity-0 hover:opacity-20 transition-opacity rounded-lg" />
             </div>
+            
+            {/* Song Info & Progress */}
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-foreground truncate text-sm">
-                {currentSong.track_name}
-              </h3>
-              <p className="text-muted-foreground truncate text-xs">
-                {currentSong.artists_string}
-              </p>
+              <div className="mb-2">
+                <h3 className="font-semibold text-foreground truncate text-sm">
+                  {currentSong.track_name}
+                </h3>
+                <p className="text-muted-foreground truncate text-xs">
+                  {currentSong.artists_string}
+                </p>
+              </div>
+              
+              {/* Progress Bar */}
+              <div className="space-y-1">
+                <Slider
+                  value={[currentTime]}
+                  max={duration || 1}
+                  step={1}
+                  onValueChange={(value) => onSeek(value[0])}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>{formatTime(currentTime)}</span>
+                  <span>{formatTime(duration)}</span>
+                </div>
+              </div>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsLiked(!isLiked)}
-              className="text-muted-foreground hover:text-primary"
-            >
-              <Heart className={cn("h-4 w-4", isLiked && "fill-primary text-primary")} />
-            </Button>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="space-y-2 mb-4">
-            <Slider
-              value={[currentTime]}
-              max={duration}
-              step={1}
-              onValueChange={(value) => onSeek(value[0])}
-              className="w-full"
-            />
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>{formatTime(currentTime)}</span>
-              <span>{formatTime(duration)}</span>
+            
+            {/* Controls */}
+            <div className="flex items-center space-x-1 flex-shrink-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onPrevious}
+                className="text-muted-foreground hover:text-foreground h-8 w-8 p-0"
+              >
+                <SkipBack className="h-4 w-4" />
+              </Button>
+              
+              <Button
+                onClick={isPlaying ? onPause : onPlay}
+                className="w-10 h-10 rounded-full bg-gradient-primary text-white shadow-glow-primary hover:shadow-glow-primary/80"
+              >
+                {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4 ml-0.5" />}
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onNext}
+                className="text-muted-foreground hover:text-foreground h-8 w-8 p-0"
+              >
+                <SkipForward className="h-4 w-4" />
+              </Button>
             </div>
-          </div>
-
-          {/* Controls */}
-          <div className="flex items-center justify-center space-x-6">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsShuffled(!isShuffled)}
-              className={cn(
-                "text-muted-foreground hover:text-foreground",
-                isShuffled && "text-primary"
-              )}
-            >
-              <Shuffle className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onPrevious}
-              className="text-foreground hover:text-primary"
-            >
-              <SkipBack className="h-5 w-5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="lg"
-              onClick={isPlaying ? onPause : onPlay}
-              className="bg-gradient-primary text-primary-foreground hover:shadow-glow-primary h-12 w-12 rounded-full"
-            >
-              {isPlaying ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6 ml-1" />}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onNext}
-              className="text-foreground hover:text-primary"
-            >
-              <SkipForward className="h-5 w-5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setRepeatMode(repeatMode === 'off' ? 'all' : repeatMode === 'all' ? 'one' : 'off')}
-              className={cn(
-                "text-muted-foreground hover:text-foreground",
-                repeatMode !== 'off' && "text-primary"
-              )}
-            >
-              <Repeat className="h-4 w-4" />
-            </Button>
           </div>
         </div>
 
