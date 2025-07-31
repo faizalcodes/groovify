@@ -117,9 +117,27 @@ export const useMusicPlayer = (): UseMusicPlayerReturn => {
       }
     }
     
-    audioRef.current.play()
-      .then(() => setIsPlaying(true))
-      .catch(error => console.error('Error playing audio:', error));
+    // Prevent rapid successive plays that cause AbortError
+    if (audioRef.current.readyState === 1) { // HAVE_METADATA
+      audioRef.current.play()
+        .then(() => setIsPlaying(true))
+        .catch(error => {
+          console.error('Error playing audio:', error);
+          // Only try again if it's not an AbortError
+          if (error.name !== 'AbortError') {
+            setTimeout(() => {
+              audioRef.current?.play()?.then(() => setIsPlaying(true));
+            }, 100);
+          }
+        });
+    } else {
+      // Wait for metadata to load
+      const onLoadedMetadata = () => {
+        audioRef.current?.play()?.then(() => setIsPlaying(true));
+        audioRef.current?.removeEventListener('loadedmetadata', onLoadedMetadata);
+      };
+      audioRef.current?.addEventListener('loadedmetadata', onLoadedMetadata);
+    }
   }, [currentSong, queue]);
 
   const play = useCallback(() => {
