@@ -548,6 +548,7 @@ const Index = () => {
       currentView={currentView}
       onNavigate={setCurrentView}
       onSearch={handleSearch}
+      musicPlayer={musicPlayer}
     >
       <div className="p-4 md:p-8">
         {renderCurrentView()}

@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { SearchBar } from '@/components/SearchBar';
 import { MusicPlayer } from '@/components/MusicPlayer';
-import { useMusicPlayer } from '@/hooks/useMusicPlayer';
 import { 
   Home, 
   Search, 
@@ -18,21 +17,52 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+interface Song {
+  song_id: string;
+  track_name: string;
+  artists_string: string;
+  album_name?: string;
+  cover_art_url?: string;
+  github_url: string;
+  duration_formatted?: string;
+}
+
+interface MusicPlayerState {
+  currentSong: Song | null;
+  isPlaying: boolean;
+  currentTime: number;
+  duration: number;
+  volume: number;
+  queue: Song[];
+  currentIndex: number;
+  playSong: (song: Song) => void;
+  play: () => void;
+  pause: () => void;
+  next: () => void;
+  previous: () => void;
+  seek: (time: number) => void;
+  setVolume: (volume: number) => void;
+  addToQueue: (songs: Song[]) => void;
+  clearQueue: () => void;
+  shuffleQueue: () => void;
+}
+
 interface AppLayoutProps {
   children: React.ReactNode;
   currentView: 'home' | 'search' | 'library' | 'playlist';
   onNavigate: (view: 'home' | 'search' | 'library' | 'playlist') => void;
   onSearch: (query: string) => void;
+  musicPlayer: MusicPlayerState;
 }
 
 export const AppLayout: React.FC<AppLayoutProps> = ({
   children,
   currentView,
   onNavigate,
-  onSearch
+  onSearch,
+  musicPlayer
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const musicPlayer = useMusicPlayer();
 
   const navItems = [
     { id: 'home', label: 'Home', icon: Home },
