@@ -219,32 +219,32 @@ const Index = () => {
   });
 
   const renderLibraryView = () => (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-foreground">Your Playlists</h2>
+    <div className="space-y-4 md:space-y-6 p-3 md:p-6">
+      <h2 className="text-lg md:text-2xl font-bold text-foreground">Your Playlists</h2>
       
       {Object.keys(playlists).length === 0 ? (
-        <div className="text-center py-12">
-          <Disc3 className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
-          <h3 className="text-lg font-semibold text-foreground mb-2">No playlists found</h3>
-          <p className="text-muted-foreground">Playlists will appear here when available</p>
+        <div className="text-center py-8 md:py-12">
+          <Disc3 className="h-12 w-12 md:h-16 md:w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+          <h3 className="text-base md:text-lg font-semibold text-foreground mb-2">No playlists found</h3>
+          <p className="text-sm text-muted-foreground">Playlists will appear here when available</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
           {Object.entries(playlists).map(([name, playlist]) => (
             <Card 
               key={name} 
-              className="p-6 bg-card/50 border-border/50 hover:shadow-card transition-all duration-300 cursor-pointer group"
+              className="p-4 md:p-6 bg-card/50 border-border/50 hover:shadow-card transition-all duration-300 cursor-pointer group"
               onClick={() => handlePlaylistSelect(name)}
             >
-              <div className="flex items-start space-x-4">
-                <div className="w-16 h-16 bg-gradient-primary rounded-lg flex items-center justify-center">
-                  <Disc3 className="h-8 w-8 text-white" />
+              <div className="flex items-start space-x-3 md:space-x-4">
+                <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-primary rounded-lg flex items-center justify-center">
+                  <Disc3 className="h-6 w-6 md:h-8 md:w-8 text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+                  <h3 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors text-sm md:text-base">
                     {playlist.name}
                   </h3>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs md:text-sm text-muted-foreground">
                     {playlist.unique_song_count} songs
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
@@ -252,8 +252,8 @@ const Index = () => {
                   </p>
                 </div>
               </div>
-              <div className="mt-4 flex items-center text-sm text-muted-foreground">
-                <Play className="h-4 w-4 mr-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="mt-3 md:mt-4 flex items-center text-xs md:text-sm text-muted-foreground">
+                <Play className="h-3 w-3 md:h-4 md:w-4 mr-1 opacity-0 group-hover:opacity-100 transition-opacity" />
                 <span className="group-hover:text-primary transition-colors">Play playlist</span>
               </div>
             </Card>
@@ -269,30 +269,30 @@ const Index = () => {
     const playlist = playlists[selectedPlaylist];
     
     return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
+      <div className="space-y-4 md:space-y-6 p-3 md:p-6">
+        <div className="flex items-center gap-2 md:gap-4">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setCurrentView('library')}
-            className="text-muted-foreground hover:text-foreground"
+            className="text-muted-foreground hover:text-foreground p-2"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Playlists
+            <ArrowLeft className="h-4 w-4 mr-1 md:mr-2" />
+            <span className="hidden sm:inline">Back to Playlists</span>
           </Button>
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-0">
           <div>
-            <h2 className="text-2xl font-bold text-foreground">{selectedPlaylist}</h2>
-            <p className="text-muted-foreground mt-1">
+            <h2 className="text-lg md:text-2xl font-bold text-foreground">{selectedPlaylist}</h2>
+            <p className="text-sm text-muted-foreground mt-1">
               {playlist?.unique_song_count || 0} songs
             </p>
           </div>
           {playlistSongs.length > 0 && (
             <Button
               onClick={handleShufflePlay}
-              className="bg-gradient-primary text-primary-foreground hover:shadow-glow-primary"
+              className="bg-gradient-primary text-primary-foreground hover:shadow-glow-primary w-full md:w-auto"
             >
               <Shuffle className="mr-2 h-4 w-4" />
               Shuffle All
@@ -301,21 +301,21 @@ const Index = () => {
         </div>
 
         {isLoading ? (
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4">
             {[...Array(5)].map((_, i) => (
-              <Card key={i} className="p-4 bg-card/50 border-border/50">
-                <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 bg-muted rounded-lg animate-pulse" />
+              <Card key={i} className="p-3 md:p-4 bg-card/50 border-border/50">
+                <div className="flex items-center space-x-3 md:space-x-4">
+                  <div className="w-12 h-12 md:w-16 md:h-16 bg-muted rounded-lg animate-pulse" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-4 bg-muted rounded animate-pulse" />
-                    <div className="h-3 bg-muted/60 rounded w-3/4 animate-pulse" />
+                    <div className="h-3 md:h-4 bg-muted rounded animate-pulse" />
+                    <div className="h-2 md:h-3 bg-muted/60 rounded w-3/4 animate-pulse" />
                   </div>
                 </div>
               </Card>
             ))}
           </div>
         ) : playlistSongs.length > 0 ? (
-          <div className="space-y-4">
+          <div className="space-y-2 md:space-y-4">
             {playlistSongs.map((song) => (
               <SongCard
                 key={song.song_id}
@@ -329,9 +329,9 @@ const Index = () => {
             
             {/* Infinite scroll sentinel for playlist */}
             {playlistHasMore && (
-              <div ref={playlistSentinelRef} className="flex justify-center py-8">
+              <div ref={playlistSentinelRef} className="flex justify-center py-6 md:py-8">
                 {isLoadingMore && (
-                  <div className="flex items-center text-muted-foreground">
+                  <div className="flex items-center text-muted-foreground text-sm">
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Loading more songs...
                   </div>
@@ -340,10 +340,10 @@ const Index = () => {
             )}
           </div>
         ) : (
-          <div className="text-center py-12">
-            <Music className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">No songs found</h3>
-            <p className="text-muted-foreground">This playlist appears to be empty</p>
+          <div className="text-center py-8 md:py-12">
+            <Music className="h-12 w-12 md:h-16 md:w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+            <h3 className="text-base md:text-lg font-semibold text-foreground mb-2">No songs found</h3>
+            <p className="text-sm text-muted-foreground">This playlist appears to be empty</p>
           </div>
         )}
       </div>
@@ -351,7 +351,7 @@ const Index = () => {
   };
 
   const renderHomeView = () => (
-    <div className="space-y-6 md:space-y-8 p-4 md:p-6">
+    <div className="space-y-4 md:space-y-8 p-3 md:p-6">
       {/* Hero Section - Hidden on mobile */}
       <section className="hidden md:block relative overflow-hidden rounded-xl md:rounded-2xl bg-gradient-primary p-6 md:p-12 text-white shadow-glow-primary">
         <div className="absolute inset-0 bg-black/20" />
@@ -394,39 +394,51 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Mobile Shuffle Button */}
+      <section className="md:hidden">
+        <Button
+          onClick={handleShufflePlay}
+          disabled={songs.length === 0}
+          className="w-full bg-gradient-primary text-primary-foreground hover:shadow-glow-primary py-3"
+        >
+          <Shuffle className="mr-2 h-5 w-5" />
+          Shuffle All Songs
+        </Button>
+      </section>
+
       {/* Stats Cards */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-        <Card className="p-4 md:p-6 bg-card/50 border-border/50 hover:shadow-card transition-all duration-300">
-          <div className="flex items-center space-x-3 md:space-x-4">
-            <div className="w-10 h-10 md:w-12 md:h-12 bg-primary/20 rounded-lg flex items-center justify-center">
-              <Music className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+      <section className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
+        <Card className="p-3 md:p-6 bg-card/50 border-border/50 hover:shadow-card transition-all duration-300">
+          <div className="flex flex-col md:flex-row md:items-center space-y-1 md:space-y-0 md:space-x-4">
+            <div className="w-8 h-8 md:w-12 md:h-12 bg-primary/20 rounded-lg flex items-center justify-center">
+              <Music className="h-4 w-4 md:h-6 md:w-6 text-primary" />
             </div>
             <div className="min-w-0 flex-1">
-              <h3 className="font-semibold text-foreground text-sm md:text-base">Total Songs</h3>
-              <p className="text-xl md:text-2xl font-bold text-primary">{totalSongs.toLocaleString()}</p>
+              <h3 className="font-medium text-foreground text-xs md:text-base">Total Songs</h3>
+              <p className="text-lg md:text-2xl font-bold text-primary">{totalSongs.toLocaleString()}</p>
             </div>
           </div>
         </Card>
         
-        <Card className="p-4 md:p-6 bg-card/50 border-border/50 hover:shadow-card transition-all duration-300">
-          <div className="flex items-center space-x-3 md:space-x-4">
-            <div className="w-10 h-10 md:w-12 md:h-12 bg-secondary/20 rounded-lg flex items-center justify-center">
-              <Disc3 className="h-5 w-5 md:h-6 md:w-6 text-secondary" />
+        <Card className="p-3 md:p-6 bg-card/50 border-border/50 hover:shadow-card transition-all duration-300">
+          <div className="flex flex-col md:flex-row md:items-center space-y-1 md:space-y-0 md:space-x-4">
+            <div className="w-8 h-8 md:w-12 md:h-12 bg-secondary/20 rounded-lg flex items-center justify-center">
+              <Disc3 className="h-4 w-4 md:h-6 md:w-6 text-secondary" />
             </div>
             <div className="min-w-0 flex-1">
-              <h3 className="font-semibold text-foreground text-sm md:text-base">Playlists</h3>
-              <p className="text-xl md:text-2xl font-bold text-secondary">{Object.keys(playlists).length}</p>
+              <h3 className="font-medium text-foreground text-xs md:text-base">Playlists</h3>
+              <p className="text-lg md:text-2xl font-bold text-secondary">{Object.keys(playlists).length}</p>
             </div>
           </div>
         </Card>
         
-        <Card className="p-4 md:p-6 bg-card/50 border-border/50 hover:shadow-card transition-all duration-300 sm:col-span-2 lg:col-span-1">
-          <div className="flex items-center space-x-3 md:space-x-4">
-            <div className="w-10 h-10 md:w-12 md:h-12 bg-green-500/20 rounded-lg flex items-center justify-center">
-              <TrendingUp className="h-5 w-5 md:h-6 md:w-6 text-green-500" />
+        <Card className="p-3 md:p-6 bg-card/50 border-border/50 hover:shadow-card transition-all duration-300 col-span-2 lg:col-span-1">
+          <div className="flex flex-col md:flex-row md:items-center space-y-1 md:space-y-0 md:space-x-4">
+            <div className="w-8 h-8 md:w-12 md:h-12 bg-green-500/20 rounded-lg flex items-center justify-center">
+              <TrendingUp className="h-4 w-4 md:h-6 md:w-6 text-green-500" />
             </div>
             <div className="min-w-0 flex-1">
-              <h3 className="font-semibold text-foreground text-sm md:text-base">Now Playing</h3>
+              <h3 className="font-medium text-foreground text-xs md:text-base">Now Playing</h3>
               <p className="text-xs md:text-sm text-muted-foreground truncate">
                 {musicPlayer.currentSong ? musicPlayer.currentSong.track_name : 'No song playing'}
               </p>
@@ -437,36 +449,36 @@ const Index = () => {
 
       {/* Recent Songs */}
       <section>
-        <div className="flex items-center justify-between mb-4 md:mb-6">
-          <h2 className="text-xl md:text-2xl font-bold text-foreground">Recent Songs</h2>
+        <div className="flex items-center justify-between mb-3 md:mb-6">
+          <h2 className="text-lg md:text-2xl font-bold text-foreground">Recent Songs</h2>
           <Button 
             variant="ghost" 
             size="sm"
             onClick={loadInitialData}
             disabled={isLoading}
-            className="text-primary hover:text-primary hover:bg-primary/10"
+            className="text-primary hover:text-primary hover:bg-primary/10 p-2"
           >
-            <RefreshCw className={cn("mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4", isLoading && "animate-spin")} />
-            <span className="hidden sm:inline">Refresh</span>
+            <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
+            <span className="hidden sm:inline ml-2">Refresh</span>
           </Button>
         </div>
         
         {isLoading ? (
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4">
             {[...Array(5)].map((_, i) => (
-              <Card key={i} className="p-4 bg-card/50 border-border/50">
-                <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 bg-muted rounded-lg animate-pulse" />
+              <Card key={i} className="p-3 md:p-4 bg-card/50 border-border/50">
+                <div className="flex items-center space-x-3 md:space-x-4">
+                  <div className="w-12 h-12 md:w-16 md:h-16 bg-muted rounded-lg animate-pulse" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-4 bg-muted rounded animate-pulse" />
-                    <div className="h-3 bg-muted/60 rounded w-3/4 animate-pulse" />
+                    <div className="h-3 md:h-4 bg-muted rounded animate-pulse" />
+                    <div className="h-2 md:h-3 bg-muted/60 rounded w-3/4 animate-pulse" />
                   </div>
                 </div>
               </Card>
             ))}
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-2 md:space-y-4">
             {songs.map((song, index) => (
               <SongCard
                 key={song.song_id}
@@ -480,9 +492,9 @@ const Index = () => {
             
             {/* Infinite scroll sentinel */}
             {hasMore && (
-              <div ref={homeSentinelRef} className="flex justify-center py-8">
+              <div ref={homeSentinelRef} className="flex justify-center py-6 md:py-8">
                 {isLoadingMore && (
-                  <div className="flex items-center text-muted-foreground">
+                  <div className="flex items-center text-muted-foreground text-sm">
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Loading more songs...
                   </div>
@@ -496,15 +508,15 @@ const Index = () => {
   );
 
   const renderSearchView = () => (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-foreground">
+    <div className="space-y-4 md:space-y-6 p-3 md:p-6">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-0">
+        <h2 className="text-lg md:text-2xl font-bold text-foreground">
           {searchQuery ? `Search Results for "${searchQuery}"` : 'Search Music'}
         </h2>
         {searchResults.length > 0 && (
           <Button
             onClick={handleShufflePlay}
-            className="bg-gradient-primary text-primary-foreground hover:shadow-glow-primary"
+            className="bg-gradient-primary text-primary-foreground hover:shadow-glow-primary w-full md:w-auto"
           >
             <Shuffle className="mr-2 h-4 w-4" />
             Shuffle All
@@ -513,14 +525,14 @@ const Index = () => {
       </div>
 
       {isSearching ? (
-        <div className="flex items-center justify-center py-12">
+        <div className="flex items-center justify-center py-8 md:py-12">
           <div className="text-center">
-            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
-            <p className="text-muted-foreground">Searching for music...</p>
+            <Loader2 className="h-6 w-6 md:h-8 md:w-8 animate-spin text-primary mx-auto mb-4" />
+            <p className="text-sm text-muted-foreground">Searching for music...</p>
           </div>
         </div>
       ) : searchResults.length > 0 ? (
-        <div className="space-y-4">
+        <div className="space-y-2 md:space-y-4">
           {searchResults.map((song) => (
             <SongCard
               key={song.song_id}
@@ -533,18 +545,18 @@ const Index = () => {
           ))}
         </div>
       ) : searchQuery ? (
-        <div className="text-center py-12">
-          <Music className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
-          <h3 className="text-lg font-semibold text-foreground mb-2">No songs found</h3>
-          <p className="text-muted-foreground">
+        <div className="text-center py-8 md:py-12">
+          <Music className="h-12 w-12 md:h-16 md:w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+          <h3 className="text-base md:text-lg font-semibold text-foreground mb-2">No songs found</h3>
+          <p className="text-sm text-muted-foreground">
             Try searching with different keywords or check your spelling
           </p>
         </div>
       ) : (
-        <div className="text-center py-12">
-          <Music className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
-          <h3 className="text-lg font-semibold text-foreground mb-2">Start your musical journey</h3>
-          <p className="text-muted-foreground">
+        <div className="text-center py-8 md:py-12">
+          <Music className="h-12 w-12 md:h-16 md:w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+          <h3 className="text-base md:text-lg font-semibold text-foreground mb-2">Start your musical journey</h3>
+          <p className="text-sm text-muted-foreground">
             Use the search bar above to find your favorite songs and artists
           </p>
         </div>
@@ -572,9 +584,7 @@ const Index = () => {
       onSearch={handleSearch}
       musicPlayer={musicPlayer}
     >
-      <div className="p-4 md:p-8">
-        {renderCurrentView()}
-      </div>
+      {renderCurrentView()}
     </AppLayout>
   );
 };

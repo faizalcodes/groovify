@@ -79,22 +79,22 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   return (
     <div className="min-h-screen bg-gradient-background">
       {/* Mobile Header */}
-      <header className="md:hidden bg-background-secondary/95 backdrop-blur-lg border-b border-border/50 p-4 sticky top-0 z-40">
+      <header className="md:hidden bg-background-secondary/95 backdrop-blur-lg border-b border-border/50 p-3 sticky top-0 z-40">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setIsSidebarOpen(true)}
-              className="text-foreground"
+              className="text-foreground p-2"
             >
               <Menu className="h-5 w-5" />
             </Button>
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
+              <div className="w-7 h-7 bg-gradient-primary rounded-lg flex items-center justify-center">
                 <Music className="h-4 w-4 text-white" />
               </div>
-              <h1 className="font-bold text-xl bg-gradient-primary bg-clip-text text-transparent">
+              <h1 className="font-bold text-lg bg-gradient-primary bg-clip-text text-transparent">
                 Songify
               </h1>
             </div>
@@ -105,7 +105,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
       <div className="flex">
         {/* Desktop Sidebar */}
         <aside className={cn(
-          "hidden md:flex flex-col w-80 bg-background-secondary border-r border-border/50 min-h-screen"
+          "hidden md:flex flex-col w-72 lg:w-80 bg-background-secondary border-r border-border/50 min-h-screen"
         )}>
           <div className="p-6">
             {/* Logo */}
@@ -186,7 +186,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
               className="absolute inset-0 bg-black/50 backdrop-blur-sm"
               onClick={() => setIsSidebarOpen(false)}
             />
-            <Card className="relative w-80 h-full bg-background-secondary border-r border-border/50 overflow-y-auto">
+            <Card className="relative w-72 sm:w-80 h-full bg-background-secondary border-r border-border/50 overflow-y-auto">
               <div className="p-6">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-8">
@@ -266,9 +266,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
         )}
 
         {/* Main Content */}
-        <main className="flex-1 min-h-screen pb-28 md:pb-24">
+        <main className="flex-1 min-h-screen pb-32 md:pb-24">
           {/* Search Bar for Mobile */}
-          <div className="md:hidden p-4 border-b border-border/30">
+          <div className="md:hidden p-3 border-b border-border/30">
             <SearchBar
               onSearch={onSearch}
               placeholder="Search music..."
