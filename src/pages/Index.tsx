@@ -161,19 +161,41 @@ const Index = () => {
     toast.success(`Now playing: ${song.track_name}`);
   };
 
-  const handleShufflePlay = () => {
-    let currentSongs = songs;
-    if (currentView === 'search') currentSongs = searchResults;
-    else if (currentView === 'playlist') currentSongs = playlistSongs;
-    
-    if (currentSongs.length === 0) return;
-    
-    const shuffled = [...currentSongs].sort(() => Math.random() - 0.5);
-    musicPlayer.clearQueue();
-    musicPlayer.addToQueue(shuffled);
-    musicPlayer.playSong(shuffled[0]);
-    
-    toast.success('Shuffle mode activated');
+  const handleShufflePlay = async () => {
+    try {
+      let shuffledSongs: Song[] = [];
+      
+      if (currentView === 'home') {
+        // Get random songs from all songs
+        const randomPage = Math.floor(Math.random() * Math.ceil(totalSongs / 30)) + 1;
+        const response = await songifyApi.getAllSongs(randomPage, 30);
+        shuffledSongs = response.songs.sort(() => Math.random() - 0.5);
+      } else if (currentView === 'search') {
+        // Shuffle search results (keep existing behavior)
+        if (searchResults.length === 0) return;
+        shuffledSongs = [...searchResults].sort(() => Math.random() - 0.5);
+      } else if (currentView === 'playlist' && selectedPlaylist) {
+        // Get random songs from the selected playlist
+        const playlist = playlists[selectedPlaylist];
+        if (!playlist) return;
+        
+        const totalPlaylistSongs = playlist.unique_song_count;
+        const randomPage = Math.floor(Math.random() * Math.ceil(totalPlaylistSongs / 30)) + 1;
+        const response = await songifyApi.getPlaylistSongs(selectedPlaylist, randomPage, 30);
+        shuffledSongs = response.songs.sort(() => Math.random() - 0.5);
+      }
+      
+      if (shuffledSongs.length === 0) return;
+      
+      musicPlayer.clearQueue();
+      musicPlayer.addToQueue(shuffledSongs);
+      musicPlayer.playSong(shuffledSongs[0]);
+      
+      toast.success('Shuffle mode activated');
+    } catch (error) {
+      console.error('Error shuffling songs:', error);
+      toast.error('Failed to shuffle songs');
+    }
   };
 
   const handlePlaylistSelect = (playlistName: string) => {
