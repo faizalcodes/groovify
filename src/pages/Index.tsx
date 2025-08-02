@@ -352,8 +352,8 @@ const Index = () => {
 
   const renderHomeView = () => (
     <div className="space-y-6 md:space-y-8 p-4 md:p-6">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden rounded-xl md:rounded-2xl bg-gradient-primary p-6 md:p-12 text-white shadow-glow-primary">
+      {/* Hero Section - Hidden on mobile */}
+      <section className="hidden md:block relative overflow-hidden rounded-xl md:rounded-2xl bg-gradient-primary p-6 md:p-12 text-white shadow-glow-primary">
         <div className="absolute inset-0 bg-black/20" />
         <div className="relative z-10">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
