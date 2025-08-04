@@ -352,44 +352,44 @@ const Index = () => {
   };
 
   const renderHomeView = () => (
-    <div className="min-h-screen w-full overflow-x-hidden">
-      <div className="max-w-7xl mx-auto space-y-4 md:space-y-8 p-3 md:p-6">
+    <div className="w-full min-h-screen overflow-x-hidden">
+      <div className="w-full max-w-full px-2 sm:px-3 md:px-6 space-y-3 md:space-y-6">
         {/* Hero Section - Hidden on mobile */}
-        <section className="hidden md:block relative overflow-hidden rounded-xl md:rounded-2xl bg-gradient-primary p-6 md:p-12 text-white shadow-glow-primary">
+        <section className="hidden md:block relative overflow-hidden rounded-xl bg-gradient-primary p-4 md:p-8 lg:p-12 text-white shadow-glow-primary mx-1 md:mx-0">
           <div className="absolute inset-0 bg-black/20" />
           <div className="relative z-10">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-              <div className="mb-6 md:mb-0">
-                <h1 className="text-2xl md:text-3xl lg:text-5xl font-bold mb-3 md:mb-4">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+              <div className="mb-6 lg:mb-0">
+                <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 md:mb-4">
                   Welcome to Songify
                 </h1>
-                <p className="text-base md:text-lg lg:text-xl opacity-90 mb-4 md:mb-6">
+                <p className="text-base md:text-lg opacity-90 mb-4 md:mb-6">
                   Discover and stream millions of songs from your favorite artists
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
                   <Button
                     size="lg"
                     onClick={handleShufflePlay}
-                    className="bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm w-full sm:w-auto"
+                    className="bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm"
                     disabled={songs.length === 0}
                   >
-                    <Shuffle className="mr-2 h-4 w-4 md:h-5 md:w-5" />
+                    <Shuffle className="mr-2 h-4 w-4" />
                     Shuffle Play
                   </Button>
                   <Button
                     size="lg"
                     variant="outline"
                     onClick={() => setCurrentView('search')}
-                    className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm w-full sm:w-auto"
+                    className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm"
                   >
-                    <Music className="mr-2 h-4 w-4 md:h-5 md:w-5" />
+                    <Music className="mr-2 h-4 w-4" />
                     Explore Music
                   </Button>
                 </div>
               </div>
               <div className="hidden lg:block">
-                <div className="w-24 h-24 lg:w-32 lg:h-32 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm">
-                  <Music className="h-12 w-12 lg:h-16 lg:w-16 text-white" />
+                <div className="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm">
+                  <Music className="h-12 w-12 text-white" />
                 </div>
               </div>
             </div>
@@ -397,52 +397,52 @@ const Index = () => {
         </section>
 
         {/* Mobile Shuffle Button */}
-        <section className="md:hidden w-full">
+        <section className="md:hidden w-full px-1">
           <Button
             onClick={handleShufflePlay}
             disabled={songs.length === 0}
-            className="w-full bg-gradient-primary text-primary-foreground hover:shadow-glow-primary py-3 text-sm"
+            className="w-full bg-gradient-primary text-primary-foreground hover:shadow-glow-primary py-3 text-sm font-medium"
           >
-            <Shuffle className="mr-2 h-4 w-4" />
-            Shuffle All Songs
+            <Shuffle className="mr-2 h-4 w-4 flex-shrink-0" />
+            <span className="truncate">Shuffle All Songs</span>
           </Button>
         </section>
 
         {/* Stats Cards */}
-        <section className="w-full">
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 md:gap-6">
-            <Card className="w-full p-3 md:p-6 bg-card/50 border-border/50 hover:shadow-card transition-all duration-300">
+        <section className="w-full px-1">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 sm:gap-3 md:gap-4">
+            <Card className="w-full p-3 bg-card/50 border-border/50 hover:shadow-card transition-all duration-300">
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 md:w-12 md:h-12 bg-primary/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Music className="h-4 w-4 md:h-6 md:w-6 text-primary" />
+                <div className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Music className="h-4 w-4 text-primary" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h3 className="font-medium text-foreground text-xs md:text-base">Total Songs</h3>
-                  <p className="text-base md:text-2xl font-bold text-primary">{totalSongs.toLocaleString()}</p>
+                  <h3 className="font-medium text-foreground text-xs">Total Songs</h3>
+                  <p className="text-sm font-bold text-primary">{totalSongs.toLocaleString()}</p>
                 </div>
               </div>
             </Card>
             
-            <Card className="w-full p-3 md:p-6 bg-card/50 border-border/50 hover:shadow-card transition-all duration-300">
+            <Card className="w-full p-3 bg-card/50 border-border/50 hover:shadow-card transition-all duration-300">
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 md:w-12 md:h-12 bg-secondary/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Disc3 className="h-4 w-4 md:h-6 md:w-6 text-secondary" />
+                <div className="w-8 h-8 bg-secondary/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Disc3 className="h-4 w-4 text-secondary" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h3 className="font-medium text-foreground text-xs md:text-base">Playlists</h3>
-                  <p className="text-base md:text-2xl font-bold text-secondary">{Object.keys(playlists).length}</p>
+                  <h3 className="font-medium text-foreground text-xs">Playlists</h3>
+                  <p className="text-sm font-bold text-secondary">{Object.keys(playlists).length}</p>
                 </div>
               </div>
             </Card>
             
-            <Card className="w-full p-3 md:p-6 bg-card/50 border-border/50 hover:shadow-card transition-all duration-300 md:col-span-2 lg:col-span-1">
+            <Card className="w-full p-3 bg-card/50 border-border/50 hover:shadow-card transition-all duration-300 sm:col-span-2 lg:col-span-1">
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 md:w-12 md:h-12 bg-green-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <TrendingUp className="h-4 w-4 md:h-6 md:w-6 text-green-500" />
+                <div className="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <TrendingUp className="h-4 w-4 text-green-500" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h3 className="font-medium text-foreground text-xs md:text-base">Now Playing</h3>
-                  <p className="text-xs md:text-sm text-muted-foreground truncate">
+                  <h3 className="font-medium text-foreground text-xs">Now Playing</h3>
+                  <p className="text-xs text-muted-foreground truncate">
                     {musicPlayer.currentSong ? musicPlayer.currentSong.track_name : 'No song playing'}
                   </p>
                 </div>
@@ -452,9 +452,9 @@ const Index = () => {
         </section>
 
         {/* Recent Songs */}
-        <section className="w-full">
+        <section className="w-full px-1">
           <div className="flex items-center justify-between mb-3 md:mb-6">
-            <h2 className="text-lg md:text-2xl font-bold text-foreground">Recent Songs</h2>
+            <h2 className="text-base md:text-2xl font-bold text-foreground">Recent Songs</h2>
             <Button 
               variant="ghost" 
               size="sm"
