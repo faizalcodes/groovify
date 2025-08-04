@@ -189,6 +189,7 @@ const Index = () => {
       
       musicPlayer.clearQueue();
       musicPlayer.addToQueue(shuffledSongs);
+      musicPlayer.shuffleQueue();
       musicPlayer.playSong(shuffledSongs[0]);
       
       toast.success('Shuffle mode activated');
@@ -407,7 +408,7 @@ const Index = () => {
       </section>
 
       {/* Stats Cards */}
-      <section className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
         <Card className="p-3 md:p-6 bg-card/50 border-border/50 hover:shadow-card transition-all duration-300">
           <div className="flex flex-col md:flex-row md:items-center space-y-1 md:space-y-0 md:space-x-4">
             <div className="w-8 h-8 md:w-12 md:h-12 bg-primary/20 rounded-lg flex items-center justify-center">
@@ -432,7 +433,7 @@ const Index = () => {
           </div>
         </Card>
         
-        <Card className="p-3 md:p-6 bg-card/50 border-border/50 hover:shadow-card transition-all duration-300 col-span-2 lg:col-span-1">
+        <Card className="p-3 md:p-6 bg-card/50 border-border/50 hover:shadow-card transition-all duration-300 sm:col-span-2 lg:col-span-1">
           <div className="flex flex-col md:flex-row md:items-center space-y-1 md:space-y-0 md:space-x-4">
             <div className="w-8 h-8 md:w-12 md:h-12 bg-green-500/20 rounded-lg flex items-center justify-center">
               <TrendingUp className="h-4 w-4 md:h-6 md:w-6 text-green-500" />

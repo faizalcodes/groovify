@@ -40,6 +40,7 @@ export const useMusicPlayer = (): UseMusicPlayerReturn => {
   const [volume, setVolumeState] = useState(0.7);
   const [queue, setQueue] = useState<Song[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isShuffleMode, setIsShuffleMode] = useState(false);
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const progressInterval = useRef<NodeJS.Timeout | null>(null);
@@ -158,12 +159,26 @@ export const useMusicPlayer = (): UseMusicPlayerReturn => {
   const next = useCallback(() => {
     if (queue.length === 0) return;
     
-    const nextIndex = (currentIndex + 1) % queue.length;
+    let nextIndex: number;
+    
+    if (isShuffleMode) {
+      // In shuffle mode, pick a random song (excluding current)
+      const availableIndices = queue.map((_, index) => index).filter(index => index !== currentIndex);
+      if (availableIndices.length === 0) {
+        nextIndex = currentIndex; // Only one song in queue
+      } else {
+        nextIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+      }
+    } else {
+      // Normal mode: sequential
+      nextIndex = (currentIndex + 1) % queue.length;
+    }
+    
     const nextSong = queue[nextIndex];
     
     setCurrentIndex(nextIndex);
     playSong(nextSong);
-  }, [queue, currentIndex, playSong]);
+  }, [queue, currentIndex, isShuffleMode, playSong]);
 
   const previous = useCallback(() => {
     if (queue.length === 0) return;
@@ -206,6 +221,7 @@ export const useMusicPlayer = (): UseMusicPlayerReturn => {
   }, []);
 
   const shuffleQueue = useCallback(() => {
+    setIsShuffleMode(true);
     const shuffled = [...queue];
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
