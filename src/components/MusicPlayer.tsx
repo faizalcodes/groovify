@@ -39,6 +39,7 @@ interface MusicPlayerProps {
   volume: number;
   onVolumeChange: (volume: number) => void;
   queue: Song[];
+  onShuffle: () => void;
   className?: string;
 }
 
@@ -55,6 +56,7 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({
   volume,
   onVolumeChange,
   queue,
+  onShuffle,
   className
 }) => {
   const [isMuted, setIsMuted] = useState(false);
@@ -211,7 +213,10 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setIsShuffled(!isShuffled)}
+                  onClick={() => {
+                    setIsShuffled(!isShuffled);
+                    onShuffle();
+                  }}
                   className={cn(
                     "text-muted-foreground hover:text-foreground",
                     isShuffled && "text-primary"

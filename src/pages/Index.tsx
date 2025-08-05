@@ -158,7 +158,7 @@ const Index = () => {
       musicPlayer.addToQueue(queueSongs);
     }
     
-    toast.success(`Now playing: ${song.track_name}`);
+    
   };
 
   const handleShufflePlay = async () => {
@@ -441,7 +441,7 @@ const Index = () => {
                   <TrendingUp className="h-4 w-4 text-green-500" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h3 className="font-medium text-foreground text-xs">Now Playing</h3>
+                  <h3 className="font-medium text-foreground text-xs">Current Track</h3>
                   <p className="text-xs text-muted-foreground truncate">
                     {musicPlayer.currentSong ? musicPlayer.currentSong.track_name : 'No song playing'}
                   </p>

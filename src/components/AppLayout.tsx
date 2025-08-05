@@ -285,20 +285,21 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
       </div>
 
       {/* Music Player */}
-      <MusicPlayer
-        currentSong={musicPlayer.currentSong}
-        isPlaying={musicPlayer.isPlaying}
-        onPlay={musicPlayer.play}
-        onPause={musicPlayer.pause}
-        onNext={musicPlayer.next}
-        onPrevious={musicPlayer.previous}
-        onSeek={musicPlayer.seek}
-        currentTime={musicPlayer.currentTime}
-        duration={musicPlayer.duration}
-        volume={musicPlayer.volume}
-        onVolumeChange={musicPlayer.setVolume}
-        queue={musicPlayer.queue}
-      />
+        <MusicPlayer
+          currentSong={musicPlayer.currentSong}
+          isPlaying={musicPlayer.isPlaying}
+          onPlay={musicPlayer.play}
+          onPause={musicPlayer.pause}
+          onNext={musicPlayer.next}
+          onPrevious={musicPlayer.previous}
+          onSeek={musicPlayer.seek}
+          currentTime={musicPlayer.currentTime}
+          duration={musicPlayer.duration}
+          volume={musicPlayer.volume}
+          onVolumeChange={musicPlayer.setVolume}
+          queue={musicPlayer.queue}
+          onShuffle={musicPlayer.shuffleQueue}
+        />
     </div>
   );
 };
