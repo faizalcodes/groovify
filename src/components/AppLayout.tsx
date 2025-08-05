@@ -266,17 +266,21 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
         )}
 
         {/* Main Content */}
-        <main className="flex-1 min-h-screen pb-32 md:pb-24">
+        <main className="flex-1 min-h-screen pb-32 md:pb-24 overflow-x-hidden">
           {/* Search Bar for Mobile */}
-          <div className="md:hidden p-3 border-b border-border/30">
-            <SearchBar
-              onSearch={onSearch}
-              placeholder="Search music..."
-              className="w-full"
-            />
+          <div className="md:hidden p-2 sm:p-3 border-b border-border/30 max-w-full">
+            <div className="w-full max-w-full">
+              <SearchBar
+                onSearch={onSearch}
+                placeholder="Search music..."
+                className="w-full max-w-full"
+              />
+            </div>
           </div>
 
-          {children}
+          <div className="w-full max-w-full overflow-x-hidden">
+            {children}
+          </div>
         </main>
       </div>
 
