@@ -38,7 +38,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
   useEffect(() => {
     // Load recent searches from localStorage
-    const saved = localStorage.getItem('songify-recent-searches');
+    const saved = localStorage.getItem('groovify-recent-searches');
     if (saved) {
       try {
         setRecentSearches(JSON.parse(saved));
@@ -68,7 +68,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       ].slice(0, 5);
       
       setRecentSearches(newRecentSearches);
-      localStorage.setItem('songify-recent-searches', JSON.stringify(newRecentSearches));
+      localStorage.setItem('groovify-recent-searches', JSON.stringify(newRecentSearches));
       
       onSearch(searchQuery);
       setShowSuggestions(false);
@@ -98,7 +98,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
   const clearRecentSearches = () => {
     setRecentSearches([]);
-    localStorage.removeItem('songify-recent-searches');
+    localStorage.removeItem('groovify-recent-searches');
   };
 
   return (

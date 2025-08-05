@@ -95,7 +95,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
                 <Music className="h-4 w-4 text-white" />
               </div>
               <h1 className="font-bold text-lg bg-gradient-primary bg-clip-text text-transparent">
-                Songify
+                Groovify
               </h1>
             </div>
           </div>
@@ -114,7 +114,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
                 <Music className="h-5 w-5 text-white" />
               </div>
               <h1 className="font-bold text-2xl bg-gradient-primary bg-clip-text text-transparent">
-                Songify
+                Groovify
               </h1>
             </div>
 
@@ -195,7 +195,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
                       <Music className="h-4 w-4 text-white" />
                     </div>
                     <h1 className="font-bold text-xl bg-gradient-primary bg-clip-text text-transparent">
-                      Songify
+                      Groovify
                     </h1>
                   </div>
                   <Button

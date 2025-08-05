@@ -361,7 +361,7 @@ const Index = () => {
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
               <div className="mb-6 lg:mb-0">
                 <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 md:mb-4">
-                  Welcome to Songify
+                  Welcome All Melophiles to Groovify
                 </h1>
                 <p className="text-base md:text-lg opacity-90 mb-4 md:mb-6">
                   Discover and stream millions of songs from your favorite artists

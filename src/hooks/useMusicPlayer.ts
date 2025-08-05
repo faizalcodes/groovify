@@ -208,7 +208,7 @@ export const useMusicPlayer = (): UseMusicPlayerReturn => {
     if (audioRef.current) {
       audioRef.current.volume = newVolume;
     }
-    localStorage.setItem('songify-volume', newVolume.toString());
+    localStorage.setItem('groovify-volume', newVolume.toString());
   }, []);
 
   const addToQueue = useCallback((songs: Song[]) => {
@@ -238,7 +238,7 @@ export const useMusicPlayer = (): UseMusicPlayerReturn => {
 
   // Load volume from localStorage on mount
   useEffect(() => {
-    const savedVolume = localStorage.getItem('songify-volume');
+    const savedVolume = localStorage.getItem('groovify-volume');
     if (savedVolume) {
       const vol = parseFloat(savedVolume);
       setVolumeState(vol);
