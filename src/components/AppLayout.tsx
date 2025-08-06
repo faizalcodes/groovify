@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { SearchBar } from '@/components/SearchBar';
 import { MusicPlayer } from '@/components/MusicPlayer';
+import { useAuth } from '@/hooks/useAuth';
+import PlaylistDialog from '@/components/PlaylistDialog';
 import { 
   Home, 
   Search, 
@@ -13,7 +16,10 @@ import {
   Disc3,
   Heart,
   Clock,
-  TrendingUp
+  TrendingUp,
+  User,
+  LogOut,
+  List
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -63,6 +69,11 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   musicPlayer
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
 
   const navItems = [
     { id: 'home', label: 'Home', icon: Home },
@@ -150,32 +161,42 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
               })}
             </nav>
 
-            {/* Library Section */}
-            <div className="border-t border-border/30 pt-6">
-              <h3 className="font-semibold text-foreground mb-4 px-3">Your Library</h3>
+            {/* User Actions */}
+            <div className="border-t border-border/30 pt-6 mb-8">
               <div className="space-y-2">
-                {libraryItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <Button
-                      key={item.id}
-                      variant="ghost"
-                      className="w-full justify-between text-left font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all duration-200"
-                    >
-                      <div className="flex items-center">
-                        <Icon className="mr-3 h-4 w-4" />
-                        {item.label}
-                      </div>
-                      {item.count > 0 && (
-                        <span className="text-xs bg-muted px-2 py-1 rounded-full">
-                          {item.count}
-                        </span>
-                      )}
-                    </Button>
-                  );
-                })}
+                <PlaylistDialog variant="create" />
+                <Link to="/playlists" className="block">
+                  <Button variant="ghost" className="w-full justify-start">
+                    <List className="mr-3 h-4 w-4" />
+                    Community Playlists
+                  </Button>
+                </Link>
               </div>
             </div>
+
+            {/* User Profile */}
+            {user && (
+              <div className="border-t border-border/30 pt-6">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center">
+                    <User className="h-4 w-4 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">
+                      {user.email}
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  onClick={handleSignOut}
+                  variant="ghost"
+                  className="w-full justify-start text-muted-foreground hover:text-foreground"
+                >
+                  <LogOut className="mr-3 h-4 w-4" />
+                  Sign Out
+                </Button>
+              </div>
+            )}
           </div>
         </aside>
 

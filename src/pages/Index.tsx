@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/AppLayout';
 import { SongCard } from '@/components/SongCard';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useMusicPlayer } from '@/hooks/useMusicPlayer';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import { useAuth } from '@/hooks/useAuth';
 import { songifyApi, Song, Playlist } from '@/services/songifyApi';
+import PlaylistDialog from '@/components/PlaylistDialog';
 import { 
   Music, 
   TrendingUp, 
@@ -15,12 +18,18 @@ import {
   RefreshCw,
   Shuffle,
   Clock,
-  ArrowLeft
+  ArrowLeft,
+  User,
+  LogOut,
+  Settings,
+  List
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
 const Index = () => {
+  const { user, loading: authLoading, signOut } = useAuth();
+  const navigate = useNavigate();
   const [currentView, setCurrentView] = useState<'home' | 'search' | 'library' | 'playlist'>('home');
   const [songs, setSongs] = useState<Song[]>([]);
   const [playlists, setPlaylists] = useState<Record<string, Playlist>>({});
@@ -39,10 +48,19 @@ const Index = () => {
   
   const musicPlayer = useMusicPlayer();
 
+  // Redirect to auth if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/auth');
+    }
+  }, [user, authLoading, navigate]);
+
   // Load initial data
   useEffect(() => {
-    loadInitialData();
-  }, []);
+    if (user) {
+      loadInitialData();
+    }
+  }, [user]);
 
   const loadInitialData = async () => {
     try {
@@ -366,7 +384,7 @@ const Index = () => {
                 <p className="text-base md:text-lg opacity-90 mb-4 md:mb-6">
                   Discover and stream millions of songs from your favorite artists
                 </p>
-                <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
+        <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
                   <Button
                     size="lg"
                     onClick={handleShufflePlay}
@@ -385,6 +403,16 @@ const Index = () => {
                     <Music className="mr-2 h-4 w-4" />
                     Explore Music
                   </Button>
+                  <Link to="/playlists">
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm w-full"
+                    >
+                      <List className="mr-2 h-4 w-4" />
+                      Community Playlists
+                    </Button>
+                  </Link>
                 </div>
               </div>
               <div className="hidden lg:block">

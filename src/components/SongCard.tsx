@@ -3,6 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Play, Pause, MoreHorizontal, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/useAuth';
+import PlaylistDialog from '@/components/PlaylistDialog';
 
 interface Song {
   song_id: string;
@@ -31,6 +33,8 @@ export const SongCard: React.FC<SongCardProps> = ({
   onPause,
   className
 }) => {
+  const { user } = useAuth();
+
   const handlePlayClick = () => {
     if (isCurrentSong && isPlaying) {
       onPause();
@@ -138,13 +142,11 @@ export const SongCard: React.FC<SongCardProps> = ({
               <span>{song.duration_formatted}</span>
             </div>
           )}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground"
-          >
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
+          {user && (
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+              <PlaylistDialog song={song} variant="add" />
+            </div>
+          )}
         </div>
       </div>
     </Card>
