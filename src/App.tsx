@@ -24,7 +24,15 @@ const PlaylistsRoute = () => {
     }
   };
 
-  return <Playlists onPlaySong={handlePlaySong} onPlayPlaylist={handlePlayPlaylist} />;
+  const handleSetPlaylistContext = (songs: any[]) => {
+    musicPlayer.setPlaylistContext(songs);
+  };
+
+  return <Playlists 
+    onPlaySong={handlePlaySong} 
+    onPlayPlaylist={handlePlayPlaylist} 
+    onSetPlaylistContext={handleSetPlaylistContext}
+  />;
 };
 
 const queryClient = new QueryClient();

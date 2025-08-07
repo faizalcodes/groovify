@@ -30,6 +30,7 @@ interface UseMusicPlayerReturn {
   addToQueue: (songs: Song[]) => void;
   clearQueue: () => void;
   shuffleQueue: () => void;
+  setPlaylistContext: (songs: Song[]) => void;
 }
 
 export const useMusicPlayer = (): UseMusicPlayerReturn => {
@@ -41,6 +42,7 @@ export const useMusicPlayer = (): UseMusicPlayerReturn => {
   const [queue, setQueue] = useState<Song[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isShuffleMode, setIsShuffleMode] = useState(false);
+  const [playlistContext, setPlaylistContextState] = useState<Song[]>([]);
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const progressInterval = useRef<NodeJS.Timeout | null>(null);
@@ -157,28 +159,46 @@ export const useMusicPlayer = (): UseMusicPlayerReturn => {
   }, []);
 
   const next = useCallback(() => {
-    if (queue.length === 0) return;
+    // Use playlist context if available, otherwise use queue
+    const songsToUse = playlistContext.length > 0 ? playlistContext : queue;
+    if (songsToUse.length === 0) return;
     
     let nextIndex: number;
+    let currentIndexInContext: number;
+    
+    if (playlistContext.length > 0) {
+      // Find current song index in playlist context
+      currentIndexInContext = playlistContext.findIndex(s => s.song_id === currentSong?.song_id);
+      if (currentIndexInContext === -1) currentIndexInContext = 0;
+    } else {
+      currentIndexInContext = currentIndex;
+    }
     
     if (isShuffleMode) {
       // In shuffle mode, pick a random song (excluding current)
-      const availableIndices = queue.map((_, index) => index).filter(index => index !== currentIndex);
+      const availableIndices = songsToUse.map((_, index) => index).filter(index => index !== currentIndexInContext);
       if (availableIndices.length === 0) {
-        nextIndex = currentIndex; // Only one song in queue
+        nextIndex = currentIndexInContext; // Only one song in context
       } else {
         nextIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
       }
     } else {
       // Normal mode: sequential
-      nextIndex = (currentIndex + 1) % queue.length;
+      nextIndex = (currentIndexInContext + 1) % songsToUse.length;
     }
     
-    const nextSong = queue[nextIndex];
+    const nextSong = songsToUse[nextIndex];
     
-    setCurrentIndex(nextIndex);
+    // Update queue and index accordingly
+    if (playlistContext.length > 0) {
+      setQueue(playlistContext);
+      setCurrentIndex(nextIndex);
+    } else {
+      setCurrentIndex(nextIndex);
+    }
+    
     playSong(nextSong);
-  }, [queue, currentIndex, isShuffleMode, playSong]);
+  }, [queue, currentIndex, isShuffleMode, playSong, playlistContext, currentSong]);
 
   const previous = useCallback(() => {
     if (queue.length === 0) return;
@@ -218,23 +238,37 @@ export const useMusicPlayer = (): UseMusicPlayerReturn => {
   const clearQueue = useCallback(() => {
     setQueue([]);
     setCurrentIndex(0);
+    setPlaylistContextState([]);
+  }, []);
+
+  const setPlaylistContext = useCallback((songs: Song[]) => {
+    setPlaylistContextState(songs);
+    setQueue(songs);
+    setCurrentIndex(0);
   }, []);
 
   const shuffleQueue = useCallback(() => {
     setIsShuffleMode(true);
-    const shuffled = [...queue];
+    const songsToShuffle = playlistContext.length > 0 ? playlistContext : queue;
+    const shuffled = [...songsToShuffle];
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
-    setQueue(shuffled);
+    
+    if (playlistContext.length > 0) {
+      setPlaylistContextState(shuffled);
+      setQueue(shuffled);
+    } else {
+      setQueue(shuffled);
+    }
     
     // Update current index to match current song
     if (currentSong) {
       const newIndex = shuffled.findIndex(s => s.song_id === currentSong.song_id);
       setCurrentIndex(newIndex !== -1 ? newIndex : 0);
     }
-  }, [queue, currentSong]);
+  }, [queue, currentSong, playlistContext]);
 
   // Load volume from localStorage on mount
   useEffect(() => {
@@ -267,5 +301,6 @@ export const useMusicPlayer = (): UseMusicPlayerReturn => {
     addToQueue,
     clearQueue,
     shuffleQueue,
+    setPlaylistContext,
   };
 };

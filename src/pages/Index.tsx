@@ -167,16 +167,20 @@ const Index = () => {
   };
 
   const handlePlaySong = (song: Song) => {
-    musicPlayer.playSong(song);
+    let contextSongs: Song[] = [];
     
-    // Add current songs to queue if not already added
-    const currentSongs = currentView === 'search' ? searchResults : songs;
-    const queueSongs = currentSongs.filter(s => !musicPlayer.queue.find(q => q.song_id === s.song_id));
-    if (queueSongs.length > 0) {
-      musicPlayer.addToQueue(queueSongs);
+    // Set the appropriate context based on current view
+    if (currentView === 'search') {
+      contextSongs = searchResults;
+    } else if (currentView === 'playlist') {
+      contextSongs = playlistSongs;
+    } else {
+      contextSongs = songs;
     }
     
-    
+    // Set playlist context for proper next/previous behavior
+    musicPlayer.setPlaylistContext(contextSongs);
+    musicPlayer.playSong(song);
   };
 
   const handleShufflePlay = async () => {
@@ -206,6 +210,7 @@ const Index = () => {
       if (shuffledSongs.length === 0) return;
       
       musicPlayer.clearQueue();
+      musicPlayer.setPlaylistContext(shuffledSongs);
       musicPlayer.addToQueue(shuffledSongs);
       musicPlayer.shuffleQueue();
       musicPlayer.playSong(shuffledSongs[0]);
