@@ -47,59 +47,6 @@ export const useMusicPlayer = (): UseMusicPlayerReturn => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const progressInterval = useRef<NodeJS.Timeout | null>(null);
 
-  // Initialize audio element
-  useEffect(() => {
-    audioRef.current = new Audio();
-    audioRef.current.volume = volume;
-    
-    const audio = audioRef.current;
-    
-    const handleLoadedMetadata = () => {
-      setDuration(audio.duration);
-    };
-    
-    const handleEnded = () => {
-      next();
-    };
-    
-    const handleError = (e: Event) => {
-      console.error('Audio error:', e);
-      // Try next song on error
-      next();
-    };
-
-    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
-    audio.addEventListener('ended', handleEnded);
-    audio.addEventListener('error', handleError);
-    
-    return () => {
-      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
-      audio.removeEventListener('ended', handleEnded);
-      audio.removeEventListener('error', handleError);
-      audio.pause();
-    };
-  }, []);
-
-  // Update progress
-  useEffect(() => {
-    if (isPlaying && audioRef.current) {
-      progressInterval.current = setInterval(() => {
-        setCurrentTime(audioRef.current?.currentTime || 0);
-      }, 1000);
-    } else {
-      if (progressInterval.current) {
-        clearInterval(progressInterval.current);
-        progressInterval.current = null;
-      }
-    }
-
-    return () => {
-      if (progressInterval.current) {
-        clearInterval(progressInterval.current);
-      }
-    };
-  }, [isPlaying]);
-
   const playSong = useCallback((song: Song) => {
     if (!audioRef.current) return;
     
@@ -143,21 +90,6 @@ export const useMusicPlayer = (): UseMusicPlayerReturn => {
     }
   }, [currentSong, queue]);
 
-  const play = useCallback(() => {
-    if (audioRef.current && currentSong) {
-      audioRef.current.play()
-        .then(() => setIsPlaying(true))
-        .catch(error => console.error('Error playing audio:', error));
-    }
-  }, [currentSong]);
-
-  const pause = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      setIsPlaying(false);
-    }
-  }, []);
-
   const next = useCallback(() => {
     // Use playlist context if available, otherwise use queue
     const songsToUse = playlistContext.length > 0 ? playlistContext : queue;
@@ -198,7 +130,75 @@ export const useMusicPlayer = (): UseMusicPlayerReturn => {
     }
     
     playSong(nextSong);
-  }, [queue, currentIndex, isShuffleMode, playSong, playlistContext, currentSong]);
+  }, [queue, currentIndex, isShuffleMode, playlistContext, currentSong, playSong]);
+
+  // Initialize audio element
+  useEffect(() => {
+    audioRef.current = new Audio();
+    audioRef.current.volume = volume;
+    
+    const audio = audioRef.current;
+    
+    const handleLoadedMetadata = () => {
+      setDuration(audio.duration);
+    };
+    
+    const handleEnded = () => {
+      next();
+    };
+    
+    const handleError = (e: Event) => {
+      console.error('Audio error:', e);
+      // Try next song on error
+      next();
+    };
+
+    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+    audio.addEventListener('ended', handleEnded);
+    audio.addEventListener('error', handleError);
+    
+    return () => {
+      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      audio.removeEventListener('ended', handleEnded);
+      audio.removeEventListener('error', handleError);
+      audio.pause();
+    };
+  }, [next]);
+
+  // Update progress
+  useEffect(() => {
+    if (isPlaying && audioRef.current) {
+      progressInterval.current = setInterval(() => {
+        setCurrentTime(audioRef.current?.currentTime || 0);
+      }, 1000);
+    } else {
+      if (progressInterval.current) {
+        clearInterval(progressInterval.current);
+        progressInterval.current = null;
+      }
+    }
+
+    return () => {
+      if (progressInterval.current) {
+        clearInterval(progressInterval.current);
+      }
+    };
+  }, [isPlaying]);
+
+  const play = useCallback(() => {
+    if (audioRef.current && currentSong) {
+      audioRef.current.play()
+        .then(() => setIsPlaying(true))
+        .catch(error => console.error('Error playing audio:', error));
+    }
+  }, [currentSong]);
+
+  const pause = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    }
+  }, []);
 
   const previous = useCallback(() => {
     if (queue.length === 0) return;

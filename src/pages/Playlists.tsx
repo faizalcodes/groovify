@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Play, User, Calendar } from 'lucide-react';
+import { Play, User, Calendar, Shuffle, Music } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface PlaylistsProps {
@@ -103,6 +103,24 @@ const Playlists = ({ onPlaySong, onPlayPlaylist, onSetPlaylistContext }: Playlis
     );
   }
 
+  const handleShufflePlaylist = (playlistId: string) => {
+    const songs = playlistSongs[playlistId];
+    if (songs && songs.length > 0) {
+      const formattedSongs = songs.map(song => ({
+        song_id: song.song_id,
+        track_name: song.track_name,
+        artists_string: song.artists_string,
+        github_url: song.github_url
+      }));
+      
+      // Shuffle the songs
+      const shuffled = [...formattedSongs].sort(() => Math.random() - 0.5);
+      onSetPlaylistContext(shuffled);
+      onPlayPlaylist(shuffled);
+      toast.success('Shuffling playlist!');
+    }
+  };
+
   return (
     <div className="container mx-auto p-6">
       <div className="mb-8">
@@ -165,13 +183,21 @@ const Playlists = ({ onPlaySong, onPlayPlaylist, onSetPlaylistContext }: Playlis
                   ) : (
                     <>
                       {playlistSongs[playlist.id]?.length > 0 && (
-                        <div className="mb-4">
+                        <div className="mb-4 flex gap-2">
                           <Button 
                             onClick={() => handlePlayPlaylist(playlist.id)}
-                            className="w-full"
+                            className="flex-1 bg-gradient-primary text-primary-foreground hover:shadow-glow-primary"
                           >
                             <Play className="h-4 w-4 mr-2" />
-                            Play All ({playlistSongs[playlist.id].length} songs)
+                            Play All
+                          </Button>
+                          <Button 
+                            onClick={() => handleShufflePlaylist(playlist.id)}
+                            variant="outline"
+                            className="flex-1"
+                          >
+                            <Shuffle className="h-4 w-4 mr-2" />
+                            Shuffle
                           </Button>
                         </div>
                       )}
@@ -185,10 +211,13 @@ const Playlists = ({ onPlaySong, onPlayPlaylist, onSetPlaylistContext }: Playlis
                           playlistSongs[playlist.id]?.map((song, index) => (
                             <div
                               key={song.id}
-                              className="flex items-center justify-between p-2 rounded-lg hover:bg-secondary/50 transition-colors"
+                              className="flex items-center space-x-3 p-3 rounded-lg hover:bg-secondary/50 transition-colors group"
                             >
+                              <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center flex-shrink-0">
+                                <Music className="h-6 w-6 text-white" />
+                              </div>
                               <div className="flex-1 min-w-0">
-                                <p className="font-medium truncate">{song.track_name}</p>
+                                <p className="font-medium truncate text-sm md:text-base">{song.track_name}</p>
                                 <p className="text-sm text-muted-foreground truncate">
                                   {song.artists_string}
                                 </p>
@@ -197,6 +226,7 @@ const Playlists = ({ onPlaySong, onPlayPlaylist, onSetPlaylistContext }: Playlis
                                 size="sm"
                                 variant="ghost"
                                 onClick={() => handlePlaySong(song, playlist.id)}
+                                className="opacity-0 group-hover:opacity-100 transition-opacity"
                               >
                                 <Play className="h-4 w-4" />
                               </Button>
