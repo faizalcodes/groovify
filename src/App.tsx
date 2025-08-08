@@ -32,6 +32,9 @@ const PlaylistsRoute = () => {
     onPlaySong={handlePlaySong} 
     onPlayPlaylist={handlePlayPlaylist} 
     onSetPlaylistContext={handleSetPlaylistContext}
+    currentSong={musicPlayer.currentSong}
+    isPlaying={musicPlayer.isPlaying}
+    onPause={musicPlayer.pause}
   />;
 };
 

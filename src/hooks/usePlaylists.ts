@@ -20,6 +20,9 @@ export interface PlaylistSong {
   track_name: string;
   artists_string: string;
   github_url: string;
+  cover_art_url?: string;
+  album_name?: string;
+  duration_formatted?: string;
   position: number;
   added_at: string;
 }
@@ -108,6 +111,9 @@ export const usePlaylists = () => {
         track_name: song.track_name,
         artists_string: song.artists_string,
         github_url: song.github_url,
+        cover_art_url: song.cover_art_url,
+        album_name: song.album_name,
+        duration_formatted: song.duration_formatted,
         position: nextPosition
       });
 
