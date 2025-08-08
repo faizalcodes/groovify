@@ -15,32 +15,25 @@ interface PlaylistsProps {
 
 const Playlists = ({ onPlaySong, onPlayPlaylist, onSetPlaylistContext }: PlaylistsProps) => {
   const { playlists, loading, getPlaylistSongs } = usePlaylists();
-  const [expandedPlaylist, setExpandedPlaylist] = useState<string | null>(null);
   const [playlistSongs, setPlaylistSongs] = useState<{ [key: string]: PlaylistSong[] }>({});
-  const [loadingSongs, setLoadingSongs] = useState<string | null>(null);
 
-  const handlePlaylistClick = async (playlistId: string) => {
-    if (expandedPlaylist === playlistId) {
-      setExpandedPlaylist(null);
-      return;
-    }
-
-    if (!playlistSongs[playlistId]) {
-      setLoadingSongs(playlistId);
-      const { data, error } = await getPlaylistSongs(playlistId);
-      
-      if (error) {
-        toast.error('Error loading playlist songs');
-        setLoadingSongs(null);
-        return;
+  // Load songs for all playlists automatically
+  useEffect(() => {
+    const loadAllPlaylistSongs = async () => {
+      for (const playlist of playlists) {
+        if (!playlistSongs[playlist.id]) {
+          const { data, error } = await getPlaylistSongs(playlist.id);
+          if (!error && data) {
+            setPlaylistSongs(prev => ({ ...prev, [playlist.id]: data }));
+          }
+        }
       }
+    };
 
-      setPlaylistSongs(prev => ({ ...prev, [playlistId]: data }));
-      setLoadingSongs(null);
+    if (playlists.length > 0) {
+      loadAllPlaylistSongs();
     }
-
-    setExpandedPlaylist(playlistId);
-  };
+  }, [playlists, getPlaylistSongs]);
 
   const handlePlayPlaylist = (playlistId: string) => {
     const songs = playlistSongs[playlistId];
@@ -57,25 +50,8 @@ const Playlists = ({ onPlaySong, onPlayPlaylist, onSetPlaylistContext }: Playlis
     }
   };
 
-  const handlePlaySong = (song: PlaylistSong, playlistId: string) => {
-    const songs = playlistSongs[playlistId];
-    if (songs && songs.length > 0) {
-      const formattedSongs = songs.map(s => ({
-        song_id: s.song_id,
-        track_name: s.track_name,
-        artists_string: s.artists_string,
-        github_url: s.github_url
-      }));
-      onSetPlaylistContext(formattedSongs);
-    }
-    
-    const formattedSong = {
-      song_id: song.song_id,
-      track_name: song.track_name,
-      artists_string: song.artists_string,
-      github_url: song.github_url
-    };
-    onPlaySong(formattedSong);
+  const handlePlaySong = (song: any) => {
+    onPlaySong(song);
   };
 
   const formatDate = (dateString: string) => {
@@ -140,104 +116,79 @@ const Playlists = ({ onPlaySong, onPlayPlaylist, onSetPlaylistContext }: Playlis
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {playlists.map((playlist) => (
-            <Card key={playlist.id} className="cursor-pointer hover:shadow-md transition-shadow bg-card/50 border-border/50 hover:shadow-card transition-all duration-300 group">
-              <CardHeader onClick={() => handlePlaylistClick(playlist.id)} className="p-4 md:p-6">
-                <div className="flex items-start space-x-3 md:space-x-4 mb-4">
-                  <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-primary rounded-lg flex items-center justify-center">
-                    <Play className="h-6 w-6 md:h-8 md:w-8 text-white" />
+            <Card key={playlist.id} className="group hover:shadow-lg transition-shadow duration-200 overflow-hidden">
+              <div className="relative aspect-square bg-gradient-to-br from-primary/20 to-primary/5">
+                {playlistSongs[playlist.id] && playlistSongs[playlist.id].length > 0 ? (
+                  <div className="grid grid-cols-2 h-full">
+                    {playlistSongs[playlist.id].slice(0, 4).map((song, index) => (
+                      <div key={song.id} className="bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
+                        <Music className="h-8 w-8 text-primary/60" />
+                      </div>
+                    ))}
+                    {playlistSongs[playlist.id].length < 4 && 
+                      [...Array(4 - playlistSongs[playlist.id].length)].map((_, i) => (
+                        <div key={i} className="bg-gradient-to-br from-muted/20 to-muted/5 flex items-center justify-center">
+                          <Music className="h-8 w-8 text-muted-foreground/40" />
+                        </div>
+                      ))
+                    }
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <CardTitle className="flex items-center justify-between text-sm md:text-base font-semibold text-foreground truncate group-hover:text-primary transition-colors">
-                      {playlist.title}
-                      <Badge variant="secondary" className="ml-2">Public</Badge>
-                    </CardTitle>
-                    <CardDescription className="text-xs md:text-sm text-muted-foreground mt-1">
-                      {playlist.description || 'No description'}
-                    </CardDescription>
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <Music className="h-16 w-16 text-muted-foreground/40" />
                   </div>
+                )}
+                
+                {/* Play controls overlay */}
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => {
+                      const songs = playlistSongs[playlist.id];
+                      if (songs && songs.length > 0) {
+                        const formattedSongs = songs.map(song => ({
+                          song_id: song.song_id,
+                          track_name: song.track_name,
+                          artists_string: song.artists_string,
+                          github_url: song.github_url
+                        }));
+                        onSetPlaylistContext(formattedSongs);
+                        onPlayPlaylist(formattedSongs);
+                      }
+                    }}
+                    className="h-12 w-12 rounded-full p-0"
+                    disabled={!playlistSongs[playlist.id] || playlistSongs[playlist.id].length === 0}
+                  >
+                    <Play className="h-6 w-6" />
+                  </Button>
+                  {playlistSongs[playlist.id] && playlistSongs[playlist.id].length > 0 && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleShufflePlaylist(playlist.id)}
+                      className="h-12 w-12 rounded-full p-0"
+                    >
+                      <Shuffle className="h-5 w-5" />
+                    </Button>
+                  )}
                 </div>
-                <div className="flex items-center gap-4 text-xs md:text-sm text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <User className="h-3 w-3 md:h-4 md:w-4" />
-                    {playlist.profiles?.display_name || 'Unknown User'}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Calendar className="h-3 w-3 md:h-4 md:w-4" />
-                    {formatDate(playlist.created_at)}
-                  </div>
-                </div>
-                <div className="mt-3 md:mt-4 flex items-center text-xs md:text-sm text-muted-foreground">
-                  <Play className="h-3 w-3 md:h-4 md:w-4 mr-1 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <span className="group-hover:text-primary transition-colors">View playlist</span>
+              </div>
+              
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg truncate">{playlist.title}</CardTitle>
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">
+                    by {playlist.profiles?.display_name || 'Unknown'}
+                  </p>
+                  {playlist.description && (
+                    <p className="text-sm text-muted-foreground line-clamp-2">{playlist.description}</p>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    {playlistSongs[playlist.id] ? `${playlistSongs[playlist.id].length} songs` : 'Loading...'} • {formatDate(playlist.created_at)}
+                  </p>
                 </div>
               </CardHeader>
-
-              {expandedPlaylist === playlist.id && (
-                <CardContent>
-                  {loadingSongs === playlist.id ? (
-                    <div className="space-y-2">
-                      {[...Array(3)].map((_, i) => (
-                        <Skeleton key={i} className="h-12 w-full" />
-                      ))}
-                    </div>
-                  ) : (
-                    <>
-                      {playlistSongs[playlist.id]?.length > 0 && (
-                        <div className="mb-4 flex gap-2">
-                          <Button 
-                            onClick={() => handlePlayPlaylist(playlist.id)}
-                            className="flex-1 bg-gradient-primary text-primary-foreground hover:shadow-glow-primary"
-                          >
-                            <Play className="h-4 w-4 mr-2" />
-                            Play All
-                          </Button>
-                          <Button 
-                            onClick={() => handleShufflePlaylist(playlist.id)}
-                            variant="outline"
-                            className="flex-1"
-                          >
-                            <Shuffle className="h-4 w-4 mr-2" />
-                            Shuffle
-                          </Button>
-                        </div>
-                      )}
-                      
-                      <div className="space-y-2">
-                        {playlistSongs[playlist.id]?.length === 0 ? (
-                          <p className="text-sm text-muted-foreground text-center py-4">
-                            This playlist is empty
-                          </p>
-                        ) : (
-                          playlistSongs[playlist.id]?.map((song, index) => (
-                            <div
-                              key={song.id}
-                              className="flex items-center space-x-3 p-3 rounded-lg hover:bg-secondary/50 transition-colors group"
-                            >
-                              <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center flex-shrink-0">
-                                <Music className="h-6 w-6 text-white" />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="font-medium truncate text-sm md:text-base">{song.track_name}</p>
-                                <p className="text-sm text-muted-foreground truncate">
-                                  {song.artists_string}
-                                </p>
-                              </div>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handlePlaySong(song, playlist.id)}
-                                className="opacity-0 group-hover:opacity-100 transition-opacity"
-                              >
-                                <Play className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    </>
-                  )}
-                </CardContent>
-              )}
             </Card>
           ))}
         </div>

@@ -134,8 +134,10 @@ export const useMusicPlayer = (): UseMusicPlayerReturn => {
 
   // Initialize audio element
   useEffect(() => {
-    audioRef.current = new Audio();
-    audioRef.current.volume = volume;
+    if (!audioRef.current) {
+      audioRef.current = new Audio();
+      audioRef.current.volume = volume;
+    }
     
     const audio = audioRef.current;
     
@@ -161,9 +163,18 @@ export const useMusicPlayer = (): UseMusicPlayerReturn => {
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
       audio.removeEventListener('ended', handleEnded);
       audio.removeEventListener('error', handleError);
-      audio.pause();
     };
   }, [next]);
+
+  // Clean up audio on unmount
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
 
   // Update progress
   useEffect(() => {
