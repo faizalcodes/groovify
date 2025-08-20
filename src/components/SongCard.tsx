@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Play, Pause, MoreVertical, Clock, ListPlus, ListMinus } from 'lucide-react';
+import { Play, Pause, MoreVertical, Clock, ListPlus, ListMinus, Download } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import PlaylistDialog from '@/components/PlaylistDialog';
@@ -179,6 +179,33 @@ export const SongCard: React.FC<SongCardProps> = ({
                       }
                     />
                   )}
+                  <DropdownMenuItem
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      try {
+                        const response = await fetch(song.github_url);
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = `${song.track_name}.mp3`;
+                        document.body.appendChild(link);
+                        link.click();
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(link);
+                      } catch (error) {
+                        console.error('Download failed:', error);
+                        // Fallback to direct link if fetch fails
+                        window.open(song.github_url, '_blank');
+                      }
+                    }}
+                  >
+                    <div className="flex items-center">
+                      <Download className="h-4 w-4 mr-2" />
+                      Download Song
+                    </div>
+                  </DropdownMenuItem>
                   {isPlaylistOwner && onRemoveFromPlaylist && (
                     <DropdownMenuItem
                       className="text-destructive focus:text-destructive"
