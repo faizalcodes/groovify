@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,9 +9,12 @@ import Auth from "./pages/Auth";
 import Playlists from "./pages/Playlists";
 import NotFound from "./pages/NotFound";
 import { useMusicPlayer } from "./hooks/useMusicPlayer";
+import { AppLayout } from "./components/AppLayout";
 
 const PlaylistsRoute = () => {
   const musicPlayer = useMusicPlayer();
+  const [currentView, setCurrentView] = useState('playlist');
+  const [searchQuery, setSearchQuery] = useState('');
   
   const handlePlaySong = (song: any) => {
     musicPlayer.playSong(song);
@@ -28,14 +32,23 @@ const PlaylistsRoute = () => {
     musicPlayer.setPlaylistContext(songs);
   };
 
-  return <Playlists 
-    onPlaySong={handlePlaySong} 
-    onPlayPlaylist={handlePlayPlaylist} 
-    onSetPlaylistContext={handleSetPlaylistContext}
-    currentSong={musicPlayer.currentSong}
-    isPlaying={musicPlayer.isPlaying}
-    onPause={musicPlayer.pause}
-  />;
+  return (
+    <AppLayout
+      currentView="library"
+      onNavigate={(view) => setCurrentView(view as any)}
+      onSearch={setSearchQuery}
+      musicPlayer={musicPlayer}
+    >
+      <Playlists 
+        onPlaySong={handlePlaySong} 
+        onPlayPlaylist={handlePlayPlaylist} 
+        onSetPlaylistContext={handleSetPlaylistContext}
+        currentSong={musicPlayer.currentSong}
+        isPlaying={musicPlayer.isPlaying}
+        onPause={musicPlayer.pause}
+      />
+    </AppLayout>
+  );
 };
 
 const queryClient = new QueryClient();

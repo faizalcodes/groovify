@@ -1,10 +1,16 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Play, Pause, MoreHorizontal, Clock } from 'lucide-react';
+import { Play, Pause, MoreVertical, Clock, ListPlus, ListMinus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import PlaylistDialog from '@/components/PlaylistDialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface Song {
   song_id: string;
@@ -23,6 +29,9 @@ interface SongCardProps {
   onPlay: (song: Song) => void;
   onPause: () => void;
   className?: string;
+  hidePlaylistButton?: boolean;
+  isPlaylistOwner?: boolean;
+  onRemoveFromPlaylist?: () => void;
 }
 
 export const SongCard: React.FC<SongCardProps> = ({
@@ -31,7 +40,10 @@ export const SongCard: React.FC<SongCardProps> = ({
   isCurrentSong = false,
   onPlay,
   onPause,
-  className
+  className,
+  hidePlaylistButton = false,
+  isPlaylistOwner = false,
+  onRemoveFromPlaylist
 }) => {
   const { user } = useAuth();
 
@@ -144,7 +156,40 @@ export const SongCard: React.FC<SongCardProps> = ({
           )}
           {user && (
             <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-              <PlaylistDialog song={song} variant="add" />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                  >
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {!hidePlaylistButton && (
+                    <PlaylistDialog
+                      song={song}
+                      variant="add"
+                      trigger={
+                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                          <ListPlus className="h-4 w-4 mr-2" />
+                          Add to Playlist
+                        </DropdownMenuItem>
+                      }
+                    />
+                  )}
+                  {isPlaylistOwner && onRemoveFromPlaylist && (
+                    <DropdownMenuItem
+                      className="text-destructive focus:text-destructive"
+                      onClick={onRemoveFromPlaylist}
+                    >
+                      <ListMinus className="h-4 w-4 mr-2" />
+                      Remove from Playlist
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           )}
         </div>
