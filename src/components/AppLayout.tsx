@@ -143,20 +143,25 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
               {navItems.map((item) => {
                 const Icon = item.icon;
                 return (
-                  <Button
+                  <Link 
                     key={item.id}
-                    variant="ghost"
-                    onClick={() => onNavigate(item.id as any)}
-                    className={cn(
-                      "w-full justify-start text-left font-medium transition-all duration-200",
-                      currentView === item.id
-                        ? "bg-accent text-primary shadow-primary/20"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
-                    )}
+                    to={item.id === 'home' ? '/' : `/?view=${item.id}`}
+                    className="block"
                   >
-                    <Icon className="mr-3 h-5 w-5" />
-                    {item.label}
-                  </Button>
+                    <Button
+                      variant="ghost"
+                      onClick={() => onNavigate(item.id as any)}
+                      className={cn(
+                        "w-full justify-start text-left font-medium transition-all duration-200",
+                        currentView === item.id
+                          ? "bg-accent text-primary shadow-primary/20"
+                          : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                      )}
+                    >
+                      <Icon className="mr-3 h-5 w-5" />
+                      {item.label}
+                    </Button>
+                  </Link>
                 );
               })}
             </nav>
@@ -255,6 +260,23 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
                   })}
                 </nav>
 
+                {/* Playlists Section */}
+                <div className="border-t border-border/30 pt-6 mb-8">
+                  <div className="space-y-2">
+                    <PlaylistDialog variant="create" />
+                    <Link 
+                      to="/playlists" 
+                      onClick={() => setIsSidebarOpen(false)}
+                      className="block"
+                    >
+                      <Button variant="ghost" className="w-full justify-start">
+                        <List className="mr-3 h-4 w-4" />
+                        Community Playlists
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+
                 {/* Library Section */}
                 <div className="border-t border-border/30 pt-6">
                   <h3 className="font-semibold text-foreground mb-4 px-3">Your Library</h3>
@@ -266,6 +288,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
                           key={item.id}
                           variant="ghost"
                           className="w-full justify-between text-left font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all duration-200"
+                          onClick={() => setIsSidebarOpen(false)}
                         >
                           <div className="flex items-center">
                             <Icon className="mr-3 h-4 w-4" />

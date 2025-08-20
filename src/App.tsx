@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Playlists from "./pages/Playlists";
@@ -13,7 +13,7 @@ import { AppLayout } from "./components/AppLayout";
 
 const PlaylistsRoute = () => {
   const musicPlayer = useMusicPlayer();
-  const [currentView, setCurrentView] = useState('playlist');
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   
   const handlePlaySong = (song: any) => {
@@ -34,8 +34,8 @@ const PlaylistsRoute = () => {
 
   return (
     <AppLayout
-      currentView="library"
-      onNavigate={(view) => setCurrentView(view as any)}
+      currentView={(window.location.pathname.replace('/', '') || 'library') as 'search' | 'library' | 'home' | 'playlist'}
+      onNavigate={(view) => navigate(`/${view}`)}
       onSearch={setSearchQuery}
       musicPlayer={musicPlayer}
     >
@@ -61,6 +61,9 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/home" element={<Navigate to="/" replace />} />
+          <Route path="/library" element={<Navigate to="/" replace />} />
+          <Route path="/search" element={<Navigate to="/" replace />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/playlists" element={<PlaylistsRoute />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

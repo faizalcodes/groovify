@@ -2,26 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/AppLayout';
 import { SongCard } from '@/components/SongCard';
+import { LibraryView } from '@/components/LibraryView';
+import { PlaylistView } from '@/components/PlaylistView';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useMusicPlayer } from '@/hooks/useMusicPlayer';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useAuth } from '@/hooks/useAuth';
 import { songifyApi, Song, Playlist } from '@/services/songifyApi';
-import PlaylistDialog from '@/components/PlaylistDialog';
 import { 
   Music, 
   TrendingUp, 
   Disc3, 
-  Play,
   Loader2,
   RefreshCw,
   Shuffle,
-  Clock,
-  ArrowLeft,
-  User,
-  LogOut,
-  Settings,
   List
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -48,19 +43,35 @@ const Index = () => {
   
   const musicPlayer = useMusicPlayer();
 
-  // Redirect to auth if not authenticated
+  // Handle route changes and view updates
+  useEffect(() => {
+    const handleRouteChange = () => {
+      const searchParams = new URLSearchParams(window.location.search);
+      const view = searchParams.get('view') as 'home' | 'search' | 'library' | 'playlist' | null;
+      
+      if (view && ['search', 'library', 'playlist'].includes(view)) {
+        setCurrentView(view);
+      } else {
+        setCurrentView('home');
+      }
+    };
+
+    // Set initial view
+    handleRouteChange();
+
+    // Listen for popstate events (browser back/forward)
+    window.addEventListener('popstate', handleRouteChange);
+    return () => window.removeEventListener('popstate', handleRouteChange);
+  }, []);
+
+  // Handle authentication
   useEffect(() => {
     if (!authLoading && !user) {
       navigate('/auth');
-    }
-  }, [user, authLoading, navigate]);
-
-  // Load initial data
-  useEffect(() => {
-    if (user) {
+    } else if (user) {
       loadInitialData();
     }
-  }, [user]);
+  }, [user, authLoading, navigate]);
 
   const loadInitialData = async () => {
     try {
@@ -228,6 +239,11 @@ const Index = () => {
     loadPlaylistSongs(playlistName);
   };
 
+  const handleBackToLibrary = () => {
+    setCurrentView('library');
+    setSelectedPlaylist(null);
+  };
+
   const { sentinelRef: homeSentinelRef } = useInfiniteScroll({
     onLoadMore: loadMoreSongs,
     hasMore,
@@ -242,137 +258,62 @@ const Index = () => {
     isLoading: isLoadingMore
   });
 
-  const renderLibraryView = () => (
+  const renderSearchView = () => (
     <div className="space-y-4 md:space-y-6 p-3 md:p-6">
-      <h2 className="text-lg md:text-2xl font-bold text-foreground">Your Playlists</h2>
-      
-      {Object.keys(playlists).length === 0 ? (
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-0">
+        <h2 className="text-lg md:text-2xl font-bold text-foreground">
+          {searchQuery ? `Search Results for "${searchQuery}"` : 'Search Music'}
+        </h2>
+        {searchResults.length > 0 && (
+          <Button
+            onClick={handleShufflePlay}
+            className="bg-gradient-primary text-primary-foreground hover:shadow-glow-primary w-full md:w-auto"
+          >
+            <Shuffle className="mr-2 h-4 w-4" />
+            Shuffle All
+          </Button>
+        )}
+      </div>
+
+      {isSearching ? (
+        <div className="flex items-center justify-center py-8 md:py-12">
+          <div className="text-center">
+            <Loader2 className="h-6 w-6 md:h-8 md:w-8 animate-spin text-primary mx-auto mb-4" />
+            <p className="text-sm text-muted-foreground">Searching for music...</p>
+          </div>
+        </div>
+      ) : searchResults.length > 0 ? (
+        <div className="space-y-2 md:space-y-4">
+          {searchResults.map((song) => (
+            <SongCard
+              key={song.song_id}
+              song={song}
+              isCurrentSong={musicPlayer.currentSong?.song_id === song.song_id}
+              isPlaying={musicPlayer.isPlaying && musicPlayer.currentSong?.song_id === song.song_id}
+              onPlay={handlePlaySong}
+              onPause={musicPlayer.pause}
+            />
+          ))}
+        </div>
+      ) : searchQuery ? (
         <div className="text-center py-8 md:py-12">
-          <Disc3 className="h-12 w-12 md:h-16 md:w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
-          <h3 className="text-base md:text-lg font-semibold text-foreground mb-2">No playlists found</h3>
-          <p className="text-sm text-muted-foreground">Playlists will appear here when available</p>
+          <Music className="h-12 w-12 md:h-16 md:w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+          <h3 className="text-base md:text-lg font-semibold text-foreground mb-2">No songs found</h3>
+          <p className="text-sm text-muted-foreground">
+            Try searching with different keywords or check your spelling
+          </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
-          {Object.entries(playlists).map(([name, playlist]) => (
-            <Card 
-              key={name} 
-              className="p-4 md:p-6 bg-card/50 border-border/50 hover:shadow-card transition-all duration-300 cursor-pointer group"
-              onClick={() => handlePlaylistSelect(name)}
-            >
-              <div className="flex items-start space-x-3 md:space-x-4">
-                <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-primary rounded-lg flex items-center justify-center">
-                  <Disc3 className="h-6 w-6 md:h-8 md:w-8 text-white" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors text-sm md:text-base">
-                    {playlist.name}
-                  </h3>
-                  <p className="text-xs md:text-sm text-muted-foreground">
-                    {playlist.unique_song_count} songs
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {playlist.successful_downloads} downloads
-                  </p>
-                </div>
-              </div>
-              <div className="mt-3 md:mt-4 flex items-center text-xs md:text-sm text-muted-foreground">
-                <Play className="h-3 w-3 md:h-4 md:w-4 mr-1 opacity-0 group-hover:opacity-100 transition-opacity" />
-                <span className="group-hover:text-primary transition-colors">Play playlist</span>
-              </div>
-            </Card>
-          ))}
+        <div className="text-center py-8 md:py-12">
+          <Music className="h-12 w-12 md:h-16 md:w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+          <h3 className="text-base md:text-lg font-semibold text-foreground mb-2">Start your musical journey</h3>
+          <p className="text-sm text-muted-foreground">
+            Use the search bar above to find your favorite songs and artists
+          </p>
         </div>
       )}
     </div>
   );
-
-  const renderPlaylistView = () => {
-    if (!selectedPlaylist) return renderLibraryView();
-    
-    const playlist = playlists[selectedPlaylist];
-    
-    return (
-      <div className="space-y-4 md:space-y-6 p-3 md:p-6">
-        <div className="flex items-center gap-2 md:gap-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setCurrentView('library')}
-            className="text-muted-foreground hover:text-foreground p-2"
-          >
-            <ArrowLeft className="h-4 w-4 mr-1 md:mr-2" />
-            <span className="hidden sm:inline">Back to Playlists</span>
-          </Button>
-        </div>
-
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-0">
-          <div>
-            <h2 className="text-lg md:text-2xl font-bold text-foreground">{selectedPlaylist}</h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              {playlist?.unique_song_count || 0} songs
-            </p>
-          </div>
-          {playlistSongs.length > 0 && (
-            <Button
-              onClick={handleShufflePlay}
-              className="bg-gradient-primary text-primary-foreground hover:shadow-glow-primary w-full md:w-auto"
-            >
-              <Shuffle className="mr-2 h-4 w-4" />
-              Shuffle All
-            </Button>
-          )}
-        </div>
-
-        {isLoading ? (
-          <div className="space-y-3 md:space-y-4">
-            {[...Array(5)].map((_, i) => (
-              <Card key={i} className="p-3 md:p-4 bg-card/50 border-border/50">
-                <div className="flex items-center space-x-3 md:space-x-4">
-                  <div className="w-12 h-12 md:w-16 md:h-16 bg-muted rounded-lg animate-pulse" />
-                  <div className="flex-1 space-y-2">
-                    <div className="h-3 md:h-4 bg-muted rounded animate-pulse" />
-                    <div className="h-2 md:h-3 bg-muted/60 rounded w-3/4 animate-pulse" />
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        ) : playlistSongs.length > 0 ? (
-          <div className="space-y-2 md:space-y-4">
-            {playlistSongs.map((song) => (
-              <SongCard
-                key={song.song_id}
-                song={song}
-                isCurrentSong={musicPlayer.currentSong?.song_id === song.song_id}
-                isPlaying={musicPlayer.isPlaying && musicPlayer.currentSong?.song_id === song.song_id}
-                onPlay={handlePlaySong}
-                onPause={musicPlayer.pause}
-              />
-            ))}
-            
-            {/* Infinite scroll sentinel for playlist */}
-            {playlistHasMore && (
-              <div ref={playlistSentinelRef} className="flex justify-center py-6 md:py-8">
-                {isLoadingMore && (
-                  <div className="flex items-center text-muted-foreground text-sm">
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Loading more songs...
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="text-center py-8 md:py-12">
-            <Music className="h-12 w-12 md:h-16 md:w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
-            <h3 className="text-base md:text-lg font-semibold text-foreground mb-2">No songs found</h3>
-            <p className="text-sm text-muted-foreground">This playlist appears to be empty</p>
-          </div>
-        )}
-      </div>
-    );
-  };
 
   const renderHomeView = () => (
     <div className="w-full min-h-screen overflow-x-hidden">
@@ -389,7 +330,7 @@ const Index = () => {
                 <p className="text-base md:text-lg opacity-90 mb-4 md:mb-6">
                   Discover and stream millions of songs from your favorite artists
                 </p>
-        <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
+                <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
                   <Button
                     size="lg"
                     onClick={handleShufflePlay}
@@ -545,71 +486,36 @@ const Index = () => {
     </div>
   );
 
-  const renderSearchView = () => (
-    <div className="space-y-4 md:space-y-6 p-3 md:p-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-0">
-        <h2 className="text-lg md:text-2xl font-bold text-foreground">
-          {searchQuery ? `Search Results for "${searchQuery}"` : 'Search Music'}
-        </h2>
-        {searchResults.length > 0 && (
-          <Button
-            onClick={handleShufflePlay}
-            className="bg-gradient-primary text-primary-foreground hover:shadow-glow-primary w-full md:w-auto"
-          >
-            <Shuffle className="mr-2 h-4 w-4" />
-            Shuffle All
-          </Button>
-        )}
-      </div>
-
-      {isSearching ? (
-        <div className="flex items-center justify-center py-8 md:py-12">
-          <div className="text-center">
-            <Loader2 className="h-6 w-6 md:h-8 md:w-8 animate-spin text-primary mx-auto mb-4" />
-            <p className="text-sm text-muted-foreground">Searching for music...</p>
-          </div>
-        </div>
-      ) : searchResults.length > 0 ? (
-        <div className="space-y-2 md:space-y-4">
-          {searchResults.map((song) => (
-            <SongCard
-              key={song.song_id}
-              song={song}
-              isCurrentSong={musicPlayer.currentSong?.song_id === song.song_id}
-              isPlaying={musicPlayer.isPlaying && musicPlayer.currentSong?.song_id === song.song_id}
-              onPlay={handlePlaySong}
-              onPause={musicPlayer.pause}
-            />
-          ))}
-        </div>
-      ) : searchQuery ? (
-        <div className="text-center py-8 md:py-12">
-          <Music className="h-12 w-12 md:h-16 md:w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
-          <h3 className="text-base md:text-lg font-semibold text-foreground mb-2">No songs found</h3>
-          <p className="text-sm text-muted-foreground">
-            Try searching with different keywords or check your spelling
-          </p>
-        </div>
-      ) : (
-        <div className="text-center py-8 md:py-12">
-          <Music className="h-12 w-12 md:h-16 md:w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
-          <h3 className="text-base md:text-lg font-semibold text-foreground mb-2">Start your musical journey</h3>
-          <p className="text-sm text-muted-foreground">
-            Use the search bar above to find your favorite songs and artists
-          </p>
-        </div>
-      )}
-    </div>
-  );
-
   const renderCurrentView = () => {
     switch (currentView) {
       case 'search':
         return renderSearchView();
       case 'library':
-        return renderLibraryView();
+        return (
+          <LibraryView
+            playlists={playlists}
+            onPlaylistSelect={handlePlaylistSelect}
+          />
+        );
       case 'playlist':
-        return renderPlaylistView();
+        if (!selectedPlaylist) return renderHomeView();
+        return (
+          <PlaylistView
+            playlist={playlists[selectedPlaylist] || null}
+            playlistName={selectedPlaylist}
+            songs={playlistSongs}
+            isLoading={isLoading}
+            isLoadingMore={isLoadingMore}
+            hasMore={playlistHasMore}
+            currentSong={musicPlayer.currentSong}
+            isPlaying={musicPlayer.isPlaying}
+            onBack={handleBackToLibrary}
+            onShufflePlay={handleShufflePlay}
+            onPlaySong={handlePlaySong}
+            onPauseSong={musicPlayer.pause}
+            sentinelRef={playlistSentinelRef}
+          />
+        );
       default:
         return renderHomeView();
     }
