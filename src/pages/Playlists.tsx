@@ -27,7 +27,31 @@ const Playlists = ({ onPlaySong, onPlayPlaylist, onSetPlaylistContext, currentSo
   const [selectedPlaylist, setSelectedPlaylist] = useState<string | null>(null);
   const [isLoadingPlaylist, setIsLoadingPlaylist] = useState(false);
 
-  // Load songs for the selected playlist when needed
+  // Preload songs for all playlists to show cover images
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadAllPlaylistSongs = async () => {
+      for (const playlist of playlists) {
+        if (!playlistSongs[playlist.id]) {
+          const { data, error } = await getPlaylistSongs(playlist.id);
+          if (isMounted && !error && data) {
+            setPlaylistSongs(prev => ({ ...prev, [playlist.id]: data }));
+          }
+        }
+      }
+    };
+
+    if (playlists.length > 0) {
+      loadAllPlaylistSongs();
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [playlists]);
+
+  // Additional load for selected playlist if needed
   useEffect(() => {
     let isMounted = true;
 
@@ -299,7 +323,17 @@ const Playlists = ({ onPlaySong, onPlayPlaylist, onSetPlaylistContext, currentSo
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
-          {playlists.map((playlist) => (
+          {[...playlists]
+            .sort((a, b) => {
+              // Sort user's playlists first
+              const aIsUsers = a.user_id === user?.id;
+              const bIsUsers = b.user_id === user?.id;
+              if (aIsUsers && !bIsUsers) return -1;
+              if (!aIsUsers && bIsUsers) return 1;
+              // Then sort by creation date (newest first)
+              return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+            })
+            .map((playlist) => (
             <Card 
               key={playlist.id} 
               className="p-4 md:p-6 bg-card/50 border-border/50 hover:shadow-card transition-all duration-300 cursor-pointer group"
