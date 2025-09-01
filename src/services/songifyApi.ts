@@ -1,5 +1,5 @@
-// const BASE_URL = 'https://songify-6k9c.onrender.com';
-const BASE_URL = 'http://209.74.95.163:3000';
+const BASE_URL = 'https://songify-6k9c.onrender.com';
+// const BASE_URL = 'http://209.74.95.163:3000';
 
 export interface Song {
   song_id: string;
