@@ -22,6 +22,8 @@ import {
   List
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+// Import the logo image
+import groovifyLogo from '@/assets/groovify.jpeg';
 
 interface Song {
   song_id: string;
@@ -103,7 +105,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
             </Button>
             <div className="flex items-center space-x-2">
               <div className="w-7 h-7 bg-gradient-primary rounded-lg flex items-center justify-center overflow-hidden">
-                <img src="/src/components/images/groovify.jpeg" alt="Groovify" className="w-full h-full object-cover" />
+                <img src={groovifyLogo} alt="Groovify" className="w-full h-full object-cover" />
               </div>
               <h1 className="font-bold text-lg bg-gradient-primary bg-clip-text text-transparent">
                 Groovify
@@ -122,7 +124,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
             {/* Logo */}
             <div className="flex items-center space-x-3 mb-8">
               <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center shadow-glow-primary overflow-hidden">
-                <img src="/src/components/images/groovify.jpeg" alt="Groovify" className="w-full h-full object-cover" />
+                <img src={groovifyLogo} alt="Groovify" className="w-full h-full object-cover" />
               </div>
               <h1 className="font-bold text-2xl bg-gradient-primary bg-clip-text text-transparent">
                 Groovify
@@ -218,7 +220,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
                 <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center overflow-hidden">
-                      <img src="/src/components/images/groovify.jpeg" alt="Groovify" className="w-full h-full object-cover" />
+                      <img src={groovifyLogo} alt="Groovify" className="w-full h-full object-cover" />
                     </div>
                     <h1 className="font-bold text-xl bg-gradient-primary bg-clip-text text-transparent">
                       Groovify

@@ -19,7 +19,7 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  base: '/',
+  base: mode === 'production' ? '/groovify/' : '/',
   build: {
     outDir: 'dist',
     emptyOutDir: true,
