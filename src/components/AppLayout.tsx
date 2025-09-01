@@ -102,8 +102,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
               <Menu className="h-5 w-5" />
             </Button>
             <div className="flex items-center space-x-2">
-              <div className="w-7 h-7 bg-gradient-primary rounded-lg flex items-center justify-center">
-                <Music className="h-4 w-4 text-white" />
+              <div className="w-7 h-7 bg-gradient-primary rounded-lg flex items-center justify-center overflow-hidden">
+                <img src="/src/components/images/groovify.jpeg" alt="Groovify" className="w-full h-full object-cover" />
               </div>
               <h1 className="font-bold text-lg bg-gradient-primary bg-clip-text text-transparent">
                 Groovify
@@ -121,8 +121,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
           <div className="p-6">
             {/* Logo */}
             <div className="flex items-center space-x-3 mb-8">
-              <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center shadow-glow-primary">
-                <Music className="h-5 w-5 text-white" />
+              <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center shadow-glow-primary overflow-hidden">
+                <img src="/src/components/images/groovify.jpeg" alt="Groovify" className="w-full h-full object-cover" />
               </div>
               <h1 className="font-bold text-2xl bg-gradient-primary bg-clip-text text-transparent">
                 Groovify
@@ -217,8 +217,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
                 {/* Header */}
                 <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
-                      <Music className="h-4 w-4 text-white" />
+                    <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center overflow-hidden">
+                      <img src="/src/components/images/groovify.jpeg" alt="Groovify" className="w-full h-full object-cover" />
                     </div>
                     <h1 className="font-bold text-xl bg-gradient-primary bg-clip-text text-transparent">
                       Groovify
