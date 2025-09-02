@@ -17,6 +17,7 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "react": path.resolve(__dirname, "./node_modules/react"),
     },
   },
   base: mode === 'production' ? '/' : '/',
@@ -24,5 +25,8 @@ export default defineConfig(({ mode }) => ({
     outDir: 'dist',
     emptyOutDir: true,
     sourcemap: true
+  },
+  optimizeDeps: {
+    include: ['zustand', 'react', 'react-dom']
   },
 }));

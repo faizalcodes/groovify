@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,6 +10,8 @@ import Playlists from "./pages/Playlists";
 import NotFound from "./pages/NotFound";
 import { useMusicPlayer } from "./hooks/useMusicPlayer";
 import { AppLayout } from "./components/AppLayout";
+import BeatSync from "./components/BeatSync";
+import { songifyApi } from "./services/songifyApi";
 
 const PlaylistsRoute = () => {
   const musicPlayer = useMusicPlayer();
@@ -34,7 +36,7 @@ const PlaylistsRoute = () => {
 
   return (
     <AppLayout
-      currentView={(window.location.pathname.replace('/', '') || 'library') as 'search' | 'library' | 'home' | 'playlist'}
+      currentView={(window.location.pathname.replace('/', '') || 'library') as 'search' | 'library' | 'home' | 'playlist' | 'beatsync'}
       onNavigate={(view) => navigate(`/${view}`)}
       onSearch={setSearchQuery}
       musicPlayer={musicPlayer}
@@ -46,6 +48,47 @@ const PlaylistsRoute = () => {
         currentSong={musicPlayer.currentSong}
         isPlaying={musicPlayer.isPlaying}
         onPause={musicPlayer.pause}
+      />
+    </AppLayout>
+  );
+};
+
+const BeatSyncRoute = () => {
+  const musicPlayer = useMusicPlayer();
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [playlists, setPlaylists] = useState({});
+  
+  // Load playlists when component mounts
+  useEffect(() => {
+    const loadPlaylists = async () => {
+      try {
+        const playlistsData = await songifyApi.getPlaylists();
+        setPlaylists(playlistsData);
+      } catch (error) {
+        console.error('Failed to load playlists:', error);
+      }
+    };
+    
+    loadPlaylists();
+  }, []);
+
+  return (
+    <AppLayout
+      currentView="beatsync"
+      onNavigate={(view) => navigate(`/${view}`)}
+      onSearch={setSearchQuery}
+      musicPlayer={musicPlayer}
+    >
+      <BeatSync
+        currentSong={musicPlayer.currentSong}
+        queue={musicPlayer.queue}
+        onPlaySong={musicPlayer.playSong}
+        onPause={musicPlayer.pause}
+        onNext={musicPlayer.next}
+        onSeek={musicPlayer.seek}
+        isPlaying={musicPlayer.isPlaying}
+        playlists={playlists}
       />
     </AppLayout>
   );
@@ -64,6 +107,7 @@ const App = () => (
           <Route path="/home" element={<Navigate to="/" replace />} />
           <Route path="/library" element={<Navigate to="/" replace />} />
           <Route path="/search" element={<Navigate to="/" replace />} />
+          <Route path="/beatsync" element={<BeatSyncRoute />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/playlists" element={<PlaylistsRoute />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

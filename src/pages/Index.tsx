@@ -25,7 +25,7 @@ import { toast } from 'sonner';
 const Index = () => {
   const { user, loading: authLoading, signOut } = useAuth();
   const navigate = useNavigate();
-  const [currentView, setCurrentView] = useState<'home' | 'search' | 'library' | 'playlist'>('home');
+  const [currentView, setCurrentView] = useState<'home' | 'search' | 'library' | 'playlist' | 'beatsync'>('home');
   const [songs, setSongs] = useState<Song[]>([]);
   const [playlists, setPlaylists] = useState<Record<string, Playlist>>({});
   const [searchResults, setSearchResults] = useState<Song[]>([]);
@@ -47,9 +47,9 @@ const Index = () => {
   useEffect(() => {
     const handleRouteChange = () => {
       const searchParams = new URLSearchParams(window.location.search);
-      const view = searchParams.get('view') as 'home' | 'search' | 'library' | 'playlist' | null;
+      const view = searchParams.get('view') as 'home' | 'search' | 'library' | 'playlist' | 'beatsync' | null;
       
-      if (view && ['search', 'library', 'playlist'].includes(view)) {
+      if (view && ['search', 'library', 'playlist', 'beatsync'].includes(view)) {
         setCurrentView(view);
       } else {
         setCurrentView('home');
@@ -516,6 +516,10 @@ const Index = () => {
             sentinelRef={playlistSentinelRef}
           />
         );
+      case 'beatsync':
+        // Redirect to /beatsync route
+        navigate('/beatsync');
+        return null;
       default:
         return renderHomeView();
     }
@@ -524,7 +528,18 @@ const Index = () => {
   return (
     <AppLayout
       currentView={currentView}
-      onNavigate={setCurrentView}
+      onNavigate={(view) => {
+        if (view === 'beatsync') {
+          navigate('/beatsync');
+        } else {
+          setCurrentView(view);
+          if (view === 'home') {
+            navigate('/');
+          } else {
+            navigate(`/?view=${view}`);
+          }
+        }
+      }}
       onSearch={handleSearch}
       musicPlayer={musicPlayer}
     >

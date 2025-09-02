@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useBeatSyncStore } from './useBeatSyncStore';
+import { toast } from 'sonner';
 
 interface Song {
   song_id: string;
@@ -47,15 +49,18 @@ export const useMusicPlayer = (): UseMusicPlayerReturn => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const progressInterval = useRef<NodeJS.Timeout | null>(null);
 
+  const beatSync = useBeatSyncStore();
   const playSong = useCallback((song: Song) => {
     if (!audioRef.current) return;
+    
+    // Allow BeatSync component to handle room logic
+    // Remove the blocking check - BeatSync will handle queue vs direct play
     
     // If it's a different song, update current song and load it
     if (currentSong?.song_id !== song.song_id) {
       setCurrentSong(song);
       audioRef.current.src = song.github_url;
       setCurrentTime(0);
-      
       // Add to queue if not already there
       if (!queue.find(s => s.song_id === song.song_id)) {
         const newQueue = [song, ...queue];
@@ -66,7 +71,6 @@ export const useMusicPlayer = (): UseMusicPlayerReturn => {
         setCurrentIndex(index);
       }
     }
-    
     // Prevent rapid successive plays that cause AbortError
     if (audioRef.current.readyState === 1) { // HAVE_METADATA
       audioRef.current.play()
@@ -88,7 +92,7 @@ export const useMusicPlayer = (): UseMusicPlayerReturn => {
       };
       audioRef.current?.addEventListener('loadedmetadata', onLoadedMetadata);
     }
-  }, [currentSong, queue]);
+  }, [currentSong, queue, beatSync]);
 
   const next = useCallback(() => {
     // Use playlist context if available, otherwise use queue

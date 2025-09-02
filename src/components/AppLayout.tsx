@@ -19,7 +19,8 @@ import {
   TrendingUp,
   User,
   LogOut,
-  List
+  List,
+  Radio
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 // Import the logo image
@@ -57,8 +58,8 @@ interface MusicPlayerState {
 
 interface AppLayoutProps {
   children: React.ReactNode;
-  currentView: 'home' | 'search' | 'library' | 'playlist';
-  onNavigate: (view: 'home' | 'search' | 'library' | 'playlist') => void;
+  currentView: 'home' | 'search' | 'library' | 'playlist' | 'beatsync';
+  onNavigate: (view: 'home' | 'search' | 'library' | 'playlist' | 'beatsync') => void;
   onSearch: (query: string) => void;
   musicPlayer: MusicPlayerState;
 }
@@ -81,6 +82,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
     { id: 'home', label: 'Home', icon: Home },
     { id: 'search', label: 'Search', icon: Search },
     { id: 'library', label: 'Your Library', icon: Library },
+    { id: 'beatsync', label: 'BeatSync', icon: Radio },
   ];
 
   const libraryItems = [
@@ -144,10 +146,21 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
             <nav className="space-y-2 mb-8">
               {navItems.map((item) => {
                 const Icon = item.icon;
+                const getNavPath = (id: string) => {
+                  switch (id) {
+                    case 'home':
+                      return '/';
+                    case 'beatsync':
+                      return '/beatsync';
+                    default:
+                      return `/?view=${id}`;
+                  }
+                };
+                
                 return (
                   <Link 
                     key={item.id}
-                    to={item.id === 'home' ? '/' : `/?view=${item.id}`}
+                    to={getNavPath(item.id)}
                     className="block"
                   >
                     <Button
