@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Playlists from "./pages/Playlists";
 import NotFound from "./pages/NotFound";
+import AdminGroovify from "./pages/AdminGroovify";
 import { useMusicPlayer } from "./hooks/useMusicPlayer";
 import { AppLayout } from "./components/AppLayout";
 import BeatSync from "./components/BeatSync";
@@ -110,6 +111,7 @@ const App = () => (
           <Route path="/beatsync" element={<BeatSyncRoute />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/playlists" element={<PlaylistsRoute />} />
+          <Route path="/admin-groovify" element={<AdminGroovify />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
