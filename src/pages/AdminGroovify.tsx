@@ -93,6 +93,20 @@ const AdminGroovify: React.FC = () => {
     }
   };
 
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setAdminPassword('');
+    setUsers([]);
+    setProfiles([]);
+    setPlaylists([]);
+    setError(null);
+    setShowPasswords(false);
+    toast({
+      title: "Logged Out",
+      description: "You have been logged out of the admin panel",
+    });
+  };
+
   // Fetch all users and profiles
   const fetchUsers = async () => {
     if (!isAuthenticated) return;
@@ -382,18 +396,30 @@ const AdminGroovify: React.FC = () => {
   return (
     <div className="container mx-auto p-4 max-w-7xl">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold flex items-center space-x-2">
-          <Database className="h-8 w-8 text-primary" />
-          <span>Groovify Admin Panel</span>
-        </h1>
-        <p className="text-muted-foreground mt-2">
-          Manage users, view profiles, and delete playlists
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold flex items-center space-x-2">
+              <Database className="h-8 w-8 text-primary" />
+              <span>Groovify Admin Panel</span>
+            </h1>
+            <p className="text-muted-foreground mt-2">
+              Manage users, view profiles, and delete playlists
+            </p>
+          </div>
+          <Button
+            variant="destructive"
+            onClick={handleLogout}
+            className="flex items-center space-x-2"
+          >
+            <UserCheck className="h-4 w-4" />
+            <span>Logout</span>
+          </Button>
+        </div>
         
         {/* Debug info */}
         <div className="mt-4 p-3 bg-muted/30 rounded-lg">
           <div className="text-sm space-y-1">
-            <div><strong>Supabase URL:</strong> {supabase.supabaseUrl}</div>
+            <div><strong>Connection Status:</strong> Connected to Supabase</div>
             <div><strong>Users loaded:</strong> {profiles.length}</div>
             <div><strong>Playlists loaded:</strong> {playlists.length}</div>
             {error && (
